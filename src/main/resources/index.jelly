@@ -1,0 +1,4 @@
+<?jelly escape-by-default='true'?>
+<div>
+    This plugin will fetch your credentials from your personal KeyHub vault, this data will be used for future Jenkins builds.
+</div>
