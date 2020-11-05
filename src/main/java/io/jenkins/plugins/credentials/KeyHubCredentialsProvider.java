@@ -24,6 +24,6 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
 
     @Override
     public String getDisplayName() {
-        return "KeyHub Credentials Provider"; //TODO Use Properties file
+        return "KeyHub Credentials Provider"; // TODO Use Properties file
     }
 }
