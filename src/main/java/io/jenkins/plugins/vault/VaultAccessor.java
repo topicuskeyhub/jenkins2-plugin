@@ -120,7 +120,7 @@ public class VaultAccessor implements Serializable {
         final String ENDPOINT = "https://keyhub.topicusonderwijs.nl/keyhub/rest/v1/group/32735401/vault/record/32839120?additional=secret";
         ResteasyWebTarget target = restClientBuilder.getClient().target(ENDPOINT);
         try (Response response = target.request().header("Authorization", "Bearer " + keyhubToken.getToken())
-                .header("Content-Type", "application/json")ss
+                .header("Content-Type", "application/json")
                 .header("Accept", "application/vnd.topicus.keyhub+json;version=44")
                 .header("topicus-Vault-session",
                         "c03fc46b-ac48-4d4a-8971-1ffa6a477100:AES:SYM1:zOCWcc4l9b9ZE6ztUkoOIeNkf1esXjCM+NXKZcTVd2A=")
