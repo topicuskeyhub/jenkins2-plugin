@@ -17,6 +17,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.util.Secret;
+import io.jenkins.plugins.model.KeyHubRecord;
 import io.jenkins.plugins.vault.VaultAccessor;
 import net.sf.json.JSONObject;
 
@@ -76,7 +77,8 @@ public class KeyHubClientCredentialsImpl extends BaseStandardCredentials impleme
         VaultAccessor va = new VaultAccessor();
 
         public DescriptorImpl() throws ClientProtocolException, IOException {
-            load();                                                                                                                                                                                                                                                     
+            va.fetchGroupData();
+            load();
 
             IconSet.icons.addIcon(new Icon(ICON_CLASS + " icon-sm", "webapp/images/16x16/keyHub_key.png",
                     Icon.ICON_SMALL_STYLE, IconType.PLUGIN));
@@ -86,8 +88,7 @@ public class KeyHubClientCredentialsImpl extends BaseStandardCredentials impleme
                     Icon.ICON_SMALL_STYLE, IconType.PLUGIN));
             IconSet.icons.addIcon(new Icon(ICON_CLASS + " icon-xlg", "webapp/images/48x48/keyHub_key.png",
                     Icon.ICON_SMALL_STYLE, IconType.PLUGIN));
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                va.fetchAuthenticationTokenAndGetVaultAccess();
-        }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+        }
 
         public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
             json = json.getJSONObject("keyhub_credentials");
