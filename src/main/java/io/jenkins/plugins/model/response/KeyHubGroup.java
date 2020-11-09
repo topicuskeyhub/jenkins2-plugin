@@ -1,10 +1,11 @@
 package io.jenkins.plugins.model.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class KeyHubGroup {
     private Item[] items;
-    private Object[] segments;
 
     @JsonProperty("items")
     public Item[] getItems() {
@@ -16,17 +17,11 @@ public class KeyHubGroup {
         this.items = value;
     }
 
-    @JsonProperty("segments")
-    public Object[] getSegments() {
-        return segments;
-    }
-
-    @JsonProperty("segments")
-    public void setSegments(Object[] value) {
-        this.segments = value;
-    }
-
     public String getName() {
         return items[0].getName();
+    }
+
+    public String getHref() {
+        return items[0].getLinks()[0].getHref();
     }
 }
