@@ -33,8 +33,6 @@ public class VaultAccessor implements IVaultAccessor {
     private KeyHubClientCredentials credentials;
     private RestClientBuilder restClientBuilder = new RestClientBuilder();
     private KeyHubTokenResponse keyhubToken;
-    private List<KeyHubGroup> groupIdsAndNames;
-    private Map<Integer, String> recordIdsAndNames;
 
     public VaultAccessor() {
     }
