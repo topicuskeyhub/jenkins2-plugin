@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 import javax.ws.rs.client.ClientBuilder;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
@@ -27,6 +28,7 @@ public class RestClientBuilder {
         try {
             mapper = new ObjectMapper().disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
             mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+            mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             mapper.setSerializationInclusion(Include.NON_EMPTY);
             mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
             mapper.setTimeZone(TimeZone.getDefault());

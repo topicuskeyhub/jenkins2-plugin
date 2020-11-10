@@ -1,8 +1,8 @@
-package io.jenkins.plugins.model.response;
+package io.jenkins.plugins.model.response.group;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.NONE)
-public class AdditionalObjects {
+public class AdditionalObjectsOfGroup {
 
 }

@@ -1,4 +1,4 @@
-package io.jenkins.plugins.vault;
+package io.jenkins.plugins.model.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

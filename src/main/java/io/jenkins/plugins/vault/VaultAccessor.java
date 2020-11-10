@@ -2,16 +2,14 @@ package io.jenkins.plugins.vault;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
 import javax.ws.rs.client.Entity;
 
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.Response;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 
 import org.apache.http.client.ClientProtocolException;
@@ -20,8 +18,11 @@ import org.jboss.resteasy.client.jaxrs.internal.BasicAuthentication;
 
 import hudson.util.Secret;
 import io.jenkins.plugins.credentials.KeyHubClientCredentials;
-import io.jenkins.plugins.model.KeyHubRecord;
-import io.jenkins.plugins.model.response.KeyHubGroup;
+import io.jenkins.plugins.model.response.group.KeyHubGroup;
+import io.jenkins.plugins.model.response.group.ListOfKeyHubGroups;
+import io.jenkins.plugins.model.response.record.KeyHubRecord;
+import io.jenkins.plugins.model.response.record.ListOfKeyHubRecords;
+import io.jenkins.plugins.model.response.KeyHubTokenResponse;
 
 // TODO Turn ENDPOINTS into UriBuilders when the link between VaultAccessor and GlobalUri is established
 public class VaultAccessor implements IVaultAccessor {
@@ -64,57 +65,49 @@ public class VaultAccessor implements IVaultAccessor {
         this.keyhubToken = target.request().post(Entity.form(connectionRequest), KeyHubTokenResponse.class);
     }
 
-    public List<KeyHubGroup> fetchGroupData() throws IOException {
+    public ListOfKeyHubGroups fetchGroupData() throws IOException {
         final String ENDPOINT = "https://keyhub.topicusonderwijs.nl/keyhub/rest/v1/group";
-        ObjectMapper mapper = new ObjectMapper();
         ResteasyWebTarget target = restClientBuilder.getClient().target(ENDPOINT);
+        ListOfKeyHubGroups keyhubGroups;
         try (Response response = target.request().header("Authorization", "Bearer " + keyhubToken.getToken())
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/vnd.topicus.keyhub+json;version=44").get()) {
             String json = response.readEntity(String.class);
-
-            // readTree way to parse the Json Response
-            // JsonNode node = mapper.readTree(json);
-            // JsonNode itemNode = node.get("items").get(0);
-            // String link = itemNode.get("links").get(0).get("href").asText();
-            KeyHubGroup groupTest = mapper.readValue(json, KeyHubGroup.class);
-            System.out.println("Item Name: " + groupTest.getName());
+            keyhubGroups = restClientBuilder.getMapper().readValue(json, ListOfKeyHubGroups.class);
+            System.out.println(keyhubGroups.getName());
         }
-        // return this.groupIdsAndNames;
-        return null;
+        return keyhubGroups;
     }
 
-    public void fetchRecordsFromVault(KeyHubGroup group) {
-        // final String ENDPOINT =
-        // "https://keyhub.topicusonderwijs.nl/keyhub/rest/v1/group/" + groupId +
-        // "/vault/record";
+    public ListOfKeyHubRecords fetchRecordsFromVault(KeyHubGroup group) throws IOException {
         final String ENDPOINT = group.getHref() + "/vault/record";
+        ListOfKeyHubRecords keyhubRecords;
         ResteasyWebTarget target = restClientBuilder.getClient().target(ENDPOINT);
         try (Response response = target.request().header("Authorization", "Bearer " + keyhubToken.getToken())
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/vnd.topicus.keyhub+json;version=44").get()) {
             String json = response.readEntity(String.class);
-            List<Integer> recordIds = JsonPath.parse(json).read("$..links..id");
-            List<String> recordNames = JsonPath.parse(json).read("$..items..name");
+            keyhubRecords = restClientBuilder.getMapper().readValue(json, ListOfKeyHubRecords.class);
         }
+        return keyhubRecords;
     }
 
-    public KeyHubRecord fetchRecordSecret(KeyHubRecord record) {
-        System.out.println("CALLING FETCHRECORDSECRET");
-        KeyHubRecord recordWithSecret;
-        // https://keyhub.topicusonderwijs.nl/keyhub/rest/v1/group/32735401/vault/record/32839120?additional=secret
-        final String ENDPOINT = "https://keyhub.topicusonderwijs.nl/keyhub/rest/v1/group/32735401/vault/record/32839120?additional=secret";
+    public void fetchRecordSecret(KeyHubRecord record) throws UnsupportedEncodingException {
+        String param = "?additional=secret";
+        final String ENDPOINT = record.getHref() + param;
+        System.out.println(ENDPOINT);
         ResteasyWebTarget target = restClientBuilder.getClient().target(ENDPOINT);
-        try (Response response = target.request().header("Authorization", "Bearer " + keyhubToken.getToken())
+        try (Response response = target.request().header("Authorization", "Bearer "
+                + "eyJ4NXQjUzI1NiI6IlBBTXpSdDdTRzJNTlAtMy1GMHdrWFBFYWNGbVRBN0w3RTBuZ3VLTm1qV3MiLCJraWQiOiJrZXlodWJpZHAtNDczNTU4Mzg4OTYwMTk4ODg5MyIsImFsZyI6IlJTMjU2In0.eyJhdWQiOiJlOWExN2E4NS1iZmRkLTQ5NjgtODEwZS0wZTQ4YzM5ZjZlYTkiLCJzdWIiOiJlOWExN2E4NS1iZmRkLTQ5NjgtODEwZS0wZTQ4YzM5ZjZlYTkiLCJuYmYiOjE2MDQ5Njg0OTcsImFhdCI6MTYwNDk2ODQ5NywiYW1yIjoicHdkIiwic2NvcGUiOlsiY2xpZW50IiwiZ3JvdXAiLCJhY2Nlc3NfdmF1bHQiXSwiaXNzIjoiaHR0cHM6XC9cL2tleWh1Yi50b3BpY3Vzb25kZXJ3aWpzLm5sIiwidHlwZSI6ImFjY2VzcyIsImV4cCI6MTYwNDk3MjA5NywiaWF0IjoxNjA0OTY4NDk3LCJqdGkiOiI5ZDQ5MDQyYS1jZjVhLTQyOTEtOTAxOS1iNTYwYjU1ZThjODUifQ.K-6sqoIUjvupfdVHhbdYT5GlYGXMX9otiEdBqy9PwJ6bJvwBvwFbSULvwnlDGcsIisO6p4kbo_Xk1f9dTqLXQUhQRvLM8tC7C3W2zTCe6R77p6PHNRMWUMapPFloDb7yEspfIucZeH7b-BleBlzUH6BqxImYflVi3WfewX-7MzV1ES-sl9pdhaDKAAycFupJMe4rN3AV1oc-JSjfWqYsm1nxa8_CnUn-FPj2yx5y4sxdDaB4-eGyOZehtaIEQCqjexzL-_KbYbHq2eHyGI9tS8z-4pHMhyAKxVrZqZlSTn8WPnSjiG6sv46-PpcxdBg72rW8TMDoFlr3rI6vPFFaOg")
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/vnd.topicus.keyhub+json;version=44")
-                .header("topicus-Vault-session", keyhubToken.getVaultSession()).get()) {
+                .header("topicus-Vault-session",
+                        "1cfc83ef-7695-4478-b503-12c204272516:AES:SYM1:RZwG+3rQKMlMJR4fxRvVlJXXTDKwWHnt75R2wsrEufw=")
+                .get()) {
             String json = response.readEntity(String.class);
-            String recordSecret = JsonPath.parse(json).read("$..secret..password[0]");
-            System.out.println("Record Secret: " + recordSecret);
-            // record.setRecordSecret(recordSecret);
+            String recordSecret = JsonPath.parse(json).read("$.additionalObjects..secret..password").toString()
+                    .replace("[", "").replace("\"", "").replace("]", "");
+            record.setRecordSecret(recordSecret);
         }
-        return null;
     }
-
 }

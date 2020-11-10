@@ -2,6 +2,8 @@ package io.jenkins.plugins.credentials;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.cloudbees.plugins.credentials.CredentialsScope;
 import com.cloudbees.plugins.credentials.impl.BaseStandardCredentials;
@@ -17,7 +19,9 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.util.Secret;
-import io.jenkins.plugins.model.KeyHubRecord;
+import io.jenkins.plugins.model.response.Link;
+import io.jenkins.plugins.model.response.record.AdditionalObjectsOfRecordsSecret;
+import io.jenkins.plugins.model.response.record.KeyHubRecord;
 import io.jenkins.plugins.vault.VaultAccessor;
 import net.sf.json.JSONObject;
 
@@ -73,11 +77,7 @@ public class KeyHubClientCredentialsImpl extends BaseStandardCredentials impleme
         private String globalKeyHubURI;
         private static final String ICON_CLASS = "icon-keyhub-credentials";
 
-        // Dummy Data for testing purposes of the responses in VaultAccessor
-        VaultAccessor va = new VaultAccessor();
-
         public DescriptorImpl() throws ClientProtocolException, IOException {
-            va.fetchGroupData();
             load();
 
             IconSet.icons.addIcon(new Icon(ICON_CLASS + " icon-sm", "webapp/images/16x16/keyHub_key.png",
