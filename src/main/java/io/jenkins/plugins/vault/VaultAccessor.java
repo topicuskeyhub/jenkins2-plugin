@@ -87,6 +87,7 @@ public class VaultAccessor implements IVaultAccessor {
         return keyhubRecords;
     }
 
+    // TODO map Json Response with Secret
     public void fetchRecordSecret(KeyHubRecord record) throws UnsupportedEncodingException {
         String param = "?additional=secret";
         final String ENDPOINT = record.getHref() + param;

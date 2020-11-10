@@ -3,15 +3,15 @@ package io.jenkins.plugins.model.response.record;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class AdditionalObjectsOfRecordsSecret {
-    private String secret;
+    private RecordSecret secret;
 
     @JsonProperty("secret")
-    public String getSecret() {
+    public RecordSecret getSecret() {
         return secret;
     }
 
     @JsonProperty("secret")
-    public void setSecret(String value) {
+    public void setSecret(RecordSecret value) {
         this.secret = value;
     }
 }
