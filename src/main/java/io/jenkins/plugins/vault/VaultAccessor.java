@@ -70,7 +70,6 @@ public class VaultAccessor implements IVaultAccessor {
                 .header("Accept", "application/vnd.topicus.keyhub+json;version=44").get()) {
             String json = response.readEntity(String.class);
             keyhubGroups = restClientBuilder.getMapper().readValue(json, ListOfKeyHubGroups.class);
-            System.out.println(keyhubGroups.getName());
         }
         return keyhubGroups;
     }
@@ -91,16 +90,15 @@ public class VaultAccessor implements IVaultAccessor {
     public void fetchRecordSecret(KeyHubRecord record) throws UnsupportedEncodingException {
         String param = "?additional=secret";
         final String ENDPOINT = record.getHref() + param;
-        System.out.println(ENDPOINT);
         ResteasyWebTarget target = restClientBuilder.getClient().target(ENDPOINT);
         try (Response response = target.request().header("Authorization", "Bearer " + keyhubToken.getToken())
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/vnd.topicus.keyhub+json;version=44")
                 .header("topicus-Vault-session", keyhubToken.getVaultSession()).get()) {
             String json = response.readEntity(String.class);
-            String recordSecret = JsonPath.parse(json).read("$.additionalObjects..secret..password").toString()
-                    .replace("[", "").replace("\"", "").replace("]", "");
-            record.setRecordSecret(recordSecret);
+            Secret recordSecret = Secret.fromString(JsonPath.parse(json).read("$.additionalObjects..secret..password")
+                    .toString().replace("[", "").replace("\"", "").replace("]", ""));
+            record.setRecordSecret(recordSecret.getEncryptedValue());
         }
     }
 }

@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import hudson.util.Secret;
 import io.jenkins.plugins.model.response.Link;
 
 public class KeyHubRecord {
@@ -13,7 +12,7 @@ public class KeyHubRecord {
     private AdditionalObjectsOfRecordsSecret additionalObjects;
     private String name;
     private String username;
-
+    
     @JsonProperty("$type")
     public String getType() {
         return type;
