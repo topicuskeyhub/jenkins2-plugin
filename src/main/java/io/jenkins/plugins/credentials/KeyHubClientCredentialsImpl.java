@@ -19,10 +19,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.util.Secret;
-import io.jenkins.plugins.model.response.Link;
-import io.jenkins.plugins.model.response.record.AdditionalObjectsOfRecordsSecret;
-import io.jenkins.plugins.model.response.record.KeyHubRecord;
-import io.jenkins.plugins.vault.VaultAccessor;
+import io.jenkins.plugins.configuration.GlobalPluginConfiguration;
 import net.sf.json.JSONObject;
 
 public class KeyHubClientCredentialsImpl extends BaseStandardCredentials implements KeyHubClientCredentials {
@@ -40,15 +37,11 @@ public class KeyHubClientCredentialsImpl extends BaseStandardCredentials impleme
             @NonNull String clientId, @NonNull String clientSecret, @NonNull String keyhubGroup,
             @NonNull String keyhubRecord, @CheckForNull String description) {
         super(scope, id, description);
+        this.globalUri = GlobalPluginConfiguration.getInstance().getKeyhubURI();
         this.clientId = clientId;
         this.clientSecret = Secret.fromString(clientSecret);
         this.keyhubGroup = keyhubGroup;
         this.keyhubRecord = keyhubRecord;
-    }
-
-    @NonNull
-    public String getGlobalUri() {
-        return globalUri;
     }
 
     @NonNull
@@ -71,10 +64,13 @@ public class KeyHubClientCredentialsImpl extends BaseStandardCredentials impleme
         return keyhubRecord;
     }
 
+    public String getGlobalUri() {
+        return this.globalUri;
+    }
+
     @Extension
     public static class DescriptorImpl extends BaseStandardCredentialsDescriptor {
 
-        private String globalKeyHubURI;
         private static final String ICON_CLASS = "icon-keyhub-credentials";
 
         public DescriptorImpl() throws ClientProtocolException, IOException {
@@ -90,17 +86,6 @@ public class KeyHubClientCredentialsImpl extends BaseStandardCredentials impleme
                     Icon.ICON_SMALL_STYLE, IconType.PLUGIN));
         }
 
-        public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-            json = json.getJSONObject("keyhub_credentials");
-            globalKeyHubURI = json.getString("keyhubURI");
-            save();
-            return true;
-        }
-
-        public String getGlobalKeyHubURI() {
-            return globalKeyHubURI;
-        }
-
         @Override
         public String getIconClassName() {
             return ICON_CLASS;
@@ -111,4 +96,5 @@ public class KeyHubClientCredentialsImpl extends BaseStandardCredentials impleme
             return "Keyhub Vault Credentials";
         }
     }
+
 }

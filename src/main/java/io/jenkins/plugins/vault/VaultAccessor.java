@@ -15,11 +15,11 @@ import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.resteasy.client.jaxrs.internal.BasicAuthentication;
 
 import hudson.util.Secret;
-import io.jenkins.plugins.credentials.KeyHubClientCredentials;
 import io.jenkins.plugins.model.response.group.KeyHubGroup;
 import io.jenkins.plugins.model.response.group.ListOfKeyHubGroups;
 import io.jenkins.plugins.model.response.record.KeyHubRecord;
 import io.jenkins.plugins.model.response.record.ListOfKeyHubRecords;
+import io.jenkins.plugins.model.ClientCredentials;
 import io.jenkins.plugins.model.response.KeyHubTokenResponse;
 
 public class VaultAccessor implements IVaultAccessor {
@@ -27,15 +27,33 @@ public class VaultAccessor implements IVaultAccessor {
     /**
      *
      */
-    private KeyHubClientCredentials credentials;
+    private ClientCredentials credentials;
     private RestClientBuilder restClientBuilder = new RestClientBuilder();
     private KeyHubTokenResponse keyhubToken;
 
     public VaultAccessor() {
     }
 
-    public VaultAccessor(KeyHubClientCredentials credentials) {
+    public VaultAccessor(ClientCredentials credentials) {
         this.credentials = credentials;
+    }
+
+    public void setCredentials(ClientCredentials credentials) {
+        this.credentials = credentials;
+    }
+
+    public KeyHubTokenResponse getKeyhubToken() {
+        return this.keyhubToken;
+    }
+
+    public ClientCredentials getCredentials() {
+        return this.credentials;
+    }
+
+    public VaultAccessor connect() throws IOException, InterruptedException {
+        fetchAuthenticationTokenAndGetVaultAccess();
+
+        return this;
     }
 
     /**
@@ -65,6 +83,7 @@ public class VaultAccessor implements IVaultAccessor {
         final String ENDPOINT = "https://keyhub.topicusonderwijs.nl/keyhub/rest/v1/group";
         ResteasyWebTarget target = restClientBuilder.getClient().target(ENDPOINT);
         ListOfKeyHubGroups keyhubGroups;
+
         try (Response response = target.request().header("Authorization", "Bearer " + keyhubToken.getToken())
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/vnd.topicus.keyhub+json;version=44").get()) {

@@ -14,7 +14,7 @@
     <properties>
         <revision>1.0</revision>
         <changelist>-SNAPSHOT</changelist>
-        <jenkins.version>2.249.1</jenkins.version>
+        <jenkins.version>2.249.3</jenkins.version>
         <java.level>8</java.level>
     </properties>
     <name>AAKeyHub Vault Credentials Provider</name>
@@ -68,6 +68,11 @@
             <groupId>com.jayway.jsonpath</groupId>
             <artifactId>json-path</artifactId>
             <version>2.4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>cloudbees-folder</artifactId>
+            <version>6.1.2</version>
         </dependency>
 
         <!-- Resteasy -->

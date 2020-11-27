@@ -8,10 +8,9 @@ import com.cloudbees.plugins.credentials.CredentialsProvider;
 import org.acegisecurity.Authentication;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.Extension;
 import hudson.model.ItemGroup;
 
-@Extension
+//@Extension
 public class KeyHubCredentialsProvider extends CredentialsProvider {
 
     // TODO after authentication and integration
@@ -19,7 +18,8 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
     @Override
     public <C extends Credentials> List<C> getCredentials(Class<C> type, ItemGroup itemGroup,
             Authentication authentication) {
-        return getCredentials(type, itemGroup, authentication, null);
+        // return getCredentials(type, itemGroup, authentication, null);
+        return null;
     }
 
     @Override

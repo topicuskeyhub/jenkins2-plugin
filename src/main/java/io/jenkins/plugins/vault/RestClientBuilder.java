@@ -39,7 +39,7 @@ public class RestClientBuilder {
             builder.connectTimeout(30, TimeUnit.SECONDS);
             builder.readTimeout(1, TimeUnit.MINUTES);
             client = builder.build();
-        } finally {
+        } finally { 
             t.setContextClassLoader(orig);
         }
     }

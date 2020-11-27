@@ -12,7 +12,7 @@ public class KeyHubRecord {
     private AdditionalObjectsOfRecordsSecret additionalObjects;
     private String name;
     private String username;
-    
+
     @JsonProperty("$type")
     public String getType() {
         return type;
@@ -68,6 +68,6 @@ public class KeyHubRecord {
     }
 
     public void setRecordSecret(String secret) {
-        additionalObjects.setSecret(secret);
+        additionalObjects.getSecret().setPassword(secret);
     }
 }
