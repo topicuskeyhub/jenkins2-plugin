@@ -75,15 +75,6 @@ public class KeyHubClientCredentialsImpl extends BaseStandardCredentials impleme
 
         public DescriptorImpl() throws ClientProtocolException, IOException {
             load();
-
-            IconSet.icons.addIcon(new Icon(ICON_CLASS + " icon-sm", "webapp/images/16x16/keyHub_key.png",
-                    Icon.ICON_SMALL_STYLE, IconType.PLUGIN));
-            IconSet.icons.addIcon(new Icon(ICON_CLASS + " icon-md", "webapp/images/24x24/keyHub_key.png",
-                    Icon.ICON_SMALL_STYLE, IconType.PLUGIN));
-            IconSet.icons.addIcon(new Icon(ICON_CLASS + " icon-lg", "webapp/images/32x32/keyHub_key.png",
-                    Icon.ICON_SMALL_STYLE, IconType.PLUGIN));
-            IconSet.icons.addIcon(new Icon(ICON_CLASS + " icon-xlg", "webapp/images/48x48/keyHub_key.png",
-                    Icon.ICON_SMALL_STYLE, IconType.PLUGIN));
         }
 
         @Override
