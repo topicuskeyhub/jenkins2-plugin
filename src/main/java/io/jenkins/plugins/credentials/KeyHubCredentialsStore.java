@@ -27,6 +27,7 @@ import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.ModelObject;
 import hudson.security.ACL;
 import hudson.security.Permission;
+import io.jenkins.plugins.model.ClientCredentials;
 import jenkins.model.Jenkins;
 
 public class KeyHubCredentialsStore extends CredentialsStore {
@@ -37,6 +38,11 @@ public class KeyHubCredentialsStore extends CredentialsStore {
     public KeyHubCredentialsStore(KeyHubCredentialsProvider provider) {
         super(KeyHubCredentialsProvider.class);
         this.provider = provider;
+    }
+
+    public KeyHubCredentialsStore() {
+        super(KeyHubCredentialsProvider.class);
+        this.provider = new KeyHubCredentialsProvider();
     }
 
     @Override
@@ -52,6 +58,15 @@ public class KeyHubCredentialsStore extends CredentialsStore {
     @Override
     public List<Credentials> getCredentials(Domain domain) {
         if (Domain.global().equals(domain) && Jenkins.get().hasPermission(CredentialsProvider.VIEW)) {
+            return provider.getCredentials(Credentials.class, Jenkins.get(), ACL.SYSTEM);
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
+    public List<Credentials> getCredentials(ClientCredentials clientCredentials) {
+        if (Jenkins.get().hasPermission(CredentialsProvider.VIEW)) {
+            provider.setClientCredentials(clientCredentials);
             return provider.getCredentials(Credentials.class, Jenkins.get(), ACL.SYSTEM);
         } else {
             return Collections.emptyList();
@@ -106,18 +121,6 @@ public class KeyHubCredentialsStore extends CredentialsStore {
         @NonNull
         public CredentialsStore getStore() {
             return store;
-        }
-
-        // @Override
-        // public String getIconFileName() {
-        // return isVisible() ?
-        // "/plugin/gcp-secrets-manager-credentials-provider/images/32x32/icon.png" :
-        // null;
-        // }
-
-        @Override
-        public String getIconClassName() {
-            return isVisible() ? ICON_CLASS : null;
         }
 
         @Override

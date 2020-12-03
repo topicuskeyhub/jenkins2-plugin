@@ -10,6 +10,7 @@ public class KeyHubRecord {
     private String type;
     private List<Link> links;
     private AdditionalObjectsOfRecordsSecret additionalObjects;
+    private String uuid;
     private String name;
     private String username;
 
@@ -41,6 +42,16 @@ public class KeyHubRecord {
     @JsonProperty("additionalObjects")
     public void setAdditionalObjects(AdditionalObjectsOfRecordsSecret value) {
         this.additionalObjects = value;
+    }
+
+    @JsonProperty("uuid")
+    public String getUUID() {
+        return this.uuid;
+    }
+
+    @JsonProperty("uuid")
+    public void setUUID(String uuid) {
+        this.uuid = uuid;
     }
 
     @JsonProperty("name")

@@ -1,26 +1,19 @@
 package io.jenkins.plugins.credentials;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.cloudbees.plugins.credentials.CredentialsScope;
 import com.cloudbees.plugins.credentials.impl.BaseStandardCredentials;
 
 import org.apache.http.client.ClientProtocolException;
-import org.jenkins.ui.icon.Icon;
-import org.jenkins.ui.icon.IconSet;
-import org.jenkins.ui.icon.IconType;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.util.Secret;
 import io.jenkins.plugins.configuration.GlobalPluginConfiguration;
-import net.sf.json.JSONObject;
+
 
 public class KeyHubClientCredentialsImpl extends BaseStandardCredentials implements KeyHubClientCredentials {
     /**

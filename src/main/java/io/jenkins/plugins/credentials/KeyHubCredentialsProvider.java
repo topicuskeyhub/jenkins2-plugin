@@ -1,5 +1,6 @@
 package io.jenkins.plugins.credentials;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,13 +29,17 @@ import hudson.Extension;
 import hudson.model.ItemGroup;
 import hudson.model.ModelObject;
 import io.jenkins.plugins.configuration.GlobalPluginConfiguration;
-import io.jenkins.plugins.model.response.KeyHubTokenResponse;
+import io.jenkins.plugins.model.ClientCredentials;
+import io.jenkins.plugins.model.response.group.ListOfKeyHubGroups;
+import io.jenkins.plugins.model.response.record.ListOfKeyHubRecords;
+import io.jenkins.plugins.vault.VaultAccessor;
 import jenkins.model.Jenkins;
 
 @Extension
 public class KeyHubCredentialsProvider extends CredentialsProvider {
 
     private final KeyHubCredentialsStore store = new KeyHubCredentialsStore(this);
+    private static ClientCredentials clientCredentials;
 
     private Supplier<Collection<StandardUsernamePasswordCredentials>> credentialsSupplier = memoizeWithExpiration(
             KeyHubCredentialsProvider::fetchCredentials, Duration.ofMinutes(5));
@@ -50,20 +55,37 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
     private static Collection<StandardUsernamePasswordCredentials> fetchCredentials() {
         GlobalPluginConfiguration keyhubGlobalConfig = GlobalPluginConfiguration.all()
                 .get(GlobalPluginConfiguration.class);
+
         if (keyhubGlobalConfig == null) {
             throw new NullPointerException("No global config was entered."); // Make a custom runtime exception
         }
+        System.out.println("Fetch Credentials wordt aangeroepen.");
+        VaultAccessor va = new VaultAccessor(clientCredentials);
+        ListOfKeyHubRecords khRecords = new ListOfKeyHubRecords();
+        ListOfKeyHubGroups khGroups = new ListOfKeyHubGroups();
+        List<StandardUsernamePasswordCredentials> jRecords = new ArrayList<>();
+        try {
+            System.out.println("Try Fetch Credentials");
+            System.out.println("VaultAccessor is: " + va);
+            System.out.println("VaultAccessor Connect wordt nu aangeroepen" + va.connect());
+            System.out.println("Line after va.connect()");
+            khGroups = va.fetchGroupData();
+            System.out.println("khGroups: " + khGroups.toString());
+            khRecords = va.fetchRecordsFromVault(khGroups.getGroups().get(0));
+            System.out.println("khRecords: " + khRecords.toString());
+            for (int i = 0; i < khRecords.getItems().size(); i++) {
+                System.out.println("For Fetch Credentials");
+                jRecords.add(new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL,
+                        khRecords.getItems().get(i).getUUID(), khRecords.getItems().get(i).getName(),
+                        khRecords.getItems().get(i).getUsername(), ""));
+            }
+            System.out.println(jRecords.toString());
+            return jRecords;
 
-        String clientId = "";
-        KeyHubTokenResponse keyhubClientCredentials;
-        List<StandardUsernamePasswordCredentials> credentials = new ArrayList();
-
-        StandardUsernamePasswordCredentials cred1 = new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL,
-                "cred1", "Description of cred1", "Username of cred1", "password of cred1");
-
-        credentials.add(cred1);
-        return credentials;
-        // return Collections.emptyList();
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+        return Collections.emptyList();
     }
 
     @NonNull
@@ -73,17 +95,20 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
         final List<C> list = new ArrayList<>();
 
         try {
-            for(StandardUsernamePasswordCredentials credential : credentialsSupplier.get()) {
-                if(type.isAssignableFrom(credential.getClass())) {
+            for (StandardUsernamePasswordCredentials credential : credentialsSupplier.get()) {
+                if (type.isAssignableFrom(credential.getClass())) {
                     list.add(type.cast(credential));
                 }
-                //log if it doesn't match
+                // log if it doesn't match?
             }
             return list;
         } catch (RuntimeException e) {
         }
-        // return getCredentials(type, itemGroup, authentication, null);
         return Collections.emptyList();
+    }
+
+    public void setClientCredentials(ClientCredentials credentials) {
+        this.clientCredentials = credentials;
     }
 
     @Override

@@ -51,8 +51,10 @@ public class VaultAccessor implements IVaultAccessor {
     }
 
     public VaultAccessor connect() throws IOException, InterruptedException {
-        fetchAuthenticationTokenAndGetVaultAccess();
-
+        System.out.println("Current expires token: " + keyhubToken.getExpiresIn());
+        if (keyhubToken != null && keyhubToken.getExpiresIn() < 2) {
+            fetchAuthenticationTokenAndGetVaultAccess();
+        }
         return this;
     }
 
@@ -65,7 +67,8 @@ public class VaultAccessor implements IVaultAccessor {
      * @throws ClientProtocolException
      * @throws IOException
      */
-    public void fetchAuthenticationTokenAndGetVaultAccess() throws IOException, InterruptedException {
+    private void fetchAuthenticationTokenAndGetVaultAccess() throws IOException, InterruptedException {
+        System.out.println("fetchToken wordt aangeroepen.");
         if (credentials.getClientSecret() == null) {
             throw new IllegalStateException("Cannot refresh access token, no secret stored/given.");
         }

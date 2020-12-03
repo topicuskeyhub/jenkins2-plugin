@@ -9,7 +9,6 @@ import io.jenkins.plugins.model.response.record.KeyHubRecord;
 import io.jenkins.plugins.model.response.record.ListOfKeyHubRecords;
 
 public interface IVaultAccessor {
-    public void fetchAuthenticationTokenAndGetVaultAccess() throws IOException, InterruptedException;
 
     public ListOfKeyHubGroups fetchGroupData() throws IOException;
 
