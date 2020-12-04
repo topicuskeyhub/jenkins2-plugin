@@ -39,7 +39,6 @@ public class VaultBuildWrapper extends SimpleBuildWrapper {
 
     @DataBoundConstructor
     public VaultBuildWrapper(VaultConfiguration configuration) {
-        System.out.println("DataBoundConstructor is called");
         this.configuration = configuration;
     }
 
@@ -74,7 +73,6 @@ public class VaultBuildWrapper extends SimpleBuildWrapper {
             EnvVars initialEnvironment) throws IOException, InterruptedException {
         provideValuesFromVault(context, build, initialEnvironment);
         if (configuration != null) {
-            System.out.println("This isn't allowed to be called");
             provideValuesFromVault(context, build, initialEnvironment);
         }
 

@@ -27,7 +27,7 @@ public class VaultAccessor implements IVaultAccessor {
     /**
      *
      */
-    private ClientCredentials credentials;
+    private ClientCredentials clientCredentials;
     private RestClientBuilder restClientBuilder = new RestClientBuilder();
     private KeyHubTokenResponse keyhubToken;
 
@@ -35,11 +35,11 @@ public class VaultAccessor implements IVaultAccessor {
     }
 
     public VaultAccessor(ClientCredentials credentials) {
-        this.credentials = credentials;
+        this.clientCredentials = credentials;
     }
 
     public void setCredentials(ClientCredentials credentials) {
-        this.credentials = credentials;
+        this.clientCredentials = credentials;
     }
 
     public KeyHubTokenResponse getKeyhubToken() {
@@ -47,12 +47,14 @@ public class VaultAccessor implements IVaultAccessor {
     }
 
     public ClientCredentials getCredentials() {
-        return this.credentials;
+        return this.clientCredentials;
     }
 
     public VaultAccessor connect() throws IOException, InterruptedException {
-        System.out.println("Current expires token: " + keyhubToken.getExpiresIn());
-        if (keyhubToken != null && keyhubToken.getExpiresIn() < 2) {
+        if (keyhubToken == null) {
+            fetchAuthenticationTokenAndGetVaultAccess();
+        }
+        if (keyhubToken.getExpiresIn() < 2) {
             fetchAuthenticationTokenAndGetVaultAccess();
         }
         return this;
@@ -68,16 +70,15 @@ public class VaultAccessor implements IVaultAccessor {
      * @throws IOException
      */
     private void fetchAuthenticationTokenAndGetVaultAccess() throws IOException, InterruptedException {
-        System.out.println("fetchToken wordt aangeroepen.");
-        if (credentials.getClientSecret() == null) {
+        if (clientCredentials.getClientSecret() == null) {
             throw new IllegalStateException("Cannot refresh access token, no secret stored/given.");
         }
 
         final String AUTH_ENDPOINT = "https://keyhub.topicusonderwijs.nl/login/oauth2/token?authVault=access";
         Form connectionRequest = new Form().param("grant_type", "client_credentials");
         ResteasyWebTarget target = restClientBuilder.getClient().target(AUTH_ENDPOINT);
-        target.register(
-                new BasicAuthentication(credentials.getClientId(), Secret.toString(credentials.getClientSecret())));
+        target.register(new BasicAuthentication(clientCredentials.getClientId(),
+                Secret.toString(clientCredentials.getClientSecret())));
         target.request().header("Accept", "application/vnd.topicus.keyhub+json;version=44");
         this.keyhubToken = target.request().post(Entity.form(connectionRequest), KeyHubTokenResponse.class);
     }

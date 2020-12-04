@@ -9,14 +9,11 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-import javax.validation.metadata.Scope;
-
+import com.cloudbees.hudson.plugins.folder.AbstractFolder;
 import com.cloudbees.plugins.credentials.Credentials;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.CredentialsScope;
 import com.cloudbees.plugins.credentials.CredentialsStore;
-import com.cloudbees.plugins.credentials.common.IdCredentials;
-import com.cloudbees.plugins.credentials.common.StandardUsernameCredentials;
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
 import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl;
 import com.google.common.base.Suppliers;
@@ -28,6 +25,8 @@ import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
 import hudson.model.ItemGroup;
 import hudson.model.ModelObject;
+import hudson.util.Secret;
+import io.jenkins.plugins.configuration.FolderKeyHubVaultConfiguration;
 import io.jenkins.plugins.configuration.GlobalPluginConfiguration;
 import io.jenkins.plugins.model.ClientCredentials;
 import io.jenkins.plugins.model.response.group.ListOfKeyHubGroups;
@@ -39,47 +38,48 @@ import jenkins.model.Jenkins;
 public class KeyHubCredentialsProvider extends CredentialsProvider {
 
     private final KeyHubCredentialsStore store = new KeyHubCredentialsStore(this);
-    private static ClientCredentials clientCredentials;
+    private ClientCredentials clientCredentials;
 
     private Supplier<Collection<StandardUsernamePasswordCredentials>> credentialsSupplier = memoizeWithExpiration(
-            KeyHubCredentialsProvider::fetchCredentials, Duration.ofMinutes(5));
+            this::fetchCredentials, Duration.ofMinutes(5));
 
     public void refreshCredentials() {
-        credentialsSupplier = memoizeWithExpiration(KeyHubCredentialsProvider::fetchCredentials, Duration.ofMinutes(5));
+        credentialsSupplier = memoizeWithExpiration(this::fetchCredentials, Duration.ofMinutes(5));
     }
 
-    private static <T> Supplier<T> memoizeWithExpiration(Supplier<T> base, Duration duration) {
+    private <T> Supplier<T> memoizeWithExpiration(Supplier<T> base, Duration duration) {
         return Suppliers.memoizeWithExpiration(base::get, duration.toMillis(), TimeUnit.MILLISECONDS)::get;
     }
 
-    private static Collection<StandardUsernamePasswordCredentials> fetchCredentials() {
+    public static void main(String[] args) {
+        // fetchCredentials();
+        ClientCredentials clientCredentials = new ClientCredentials();
+        clientCredentials.setClientId("e9a17a85-bfdd-4968-810e-0e48c39f6ea9");
+        clientCredentials.setClientSecret(Secret.fromString("oFvsKMt1h3pIRqiSjQOyXezR-6FuBHlYGVQFyBkE"));
+        KeyHubCredentialsStore store = new KeyHubCredentialsStore();
+        store.getCredentials(clientCredentials);
+    }
+
+    private Collection<StandardUsernamePasswordCredentials> fetchCredentials() {
+        ClientCredentials clientCredentials = new ClientCredentials();
         GlobalPluginConfiguration keyhubGlobalConfig = GlobalPluginConfiguration.all()
                 .get(GlobalPluginConfiguration.class);
-
         if (keyhubGlobalConfig == null) {
             throw new NullPointerException("No global config was entered."); // Make a custom runtime exception
         }
-        System.out.println("Fetch Credentials wordt aangeroepen.");
-        VaultAccessor va = new VaultAccessor(clientCredentials);
+        VaultAccessor va = new VaultAccessor(this.clientCredentials);
         ListOfKeyHubRecords khRecords = new ListOfKeyHubRecords();
         ListOfKeyHubGroups khGroups = new ListOfKeyHubGroups();
         List<StandardUsernamePasswordCredentials> jRecords = new ArrayList<>();
         try {
-            System.out.println("Try Fetch Credentials");
-            System.out.println("VaultAccessor is: " + va);
-            System.out.println("VaultAccessor Connect wordt nu aangeroepen" + va.connect());
-            System.out.println("Line after va.connect()");
+            va.connect();
             khGroups = va.fetchGroupData();
-            System.out.println("khGroups: " + khGroups.toString());
             khRecords = va.fetchRecordsFromVault(khGroups.getGroups().get(0));
-            System.out.println("khRecords: " + khRecords.toString());
             for (int i = 0; i < khRecords.getItems().size(); i++) {
-                System.out.println("For Fetch Credentials");
                 jRecords.add(new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL,
                         khRecords.getItems().get(i).getUUID(), khRecords.getItems().get(i).getName(),
                         khRecords.getItems().get(i).getUsername(), ""));
             }
-            System.out.println(jRecords.toString());
             return jRecords;
 
         } catch (IOException | InterruptedException e) {
@@ -92,7 +92,12 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
     @Override
     public <C extends Credentials> List<C> getCredentials(Class<C> type, ItemGroup itemGroup,
             @Nullable Authentication authentication) {
+        List<FolderKeyHubVaultConfiguration> listOfClientCredentials;
+        List<AbstractFolder> foldersList = itemGroup.getAllItems(AbstractFolder.class);
+
         final List<C> list = new ArrayList<>();
+        if (this.clientCredentials == null) {
+        }
 
         try {
             for (StandardUsernamePasswordCredentials credential : credentialsSupplier.get()) {
@@ -105,6 +110,10 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
         } catch (RuntimeException e) {
         }
         return Collections.emptyList();
+    }
+
+    public ClientCredentials getClientCredentials() {
+        return clientCredentials;
     }
 
     public void setClientCredentials(ClientCredentials credentials) {

@@ -1,8 +1,13 @@
 package io.jenkins.plugins.vault;
 
 import java.io.IOException;
+import java.util.List;
 
 import com.cloudbees.hudson.plugins.folder.AbstractFolder;
+import com.cloudbees.plugins.credentials.Credentials;
+import com.cloudbees.plugins.credentials.CredentialsMatchers;
+import com.cloudbees.plugins.credentials.CredentialsProvider;
+import com.cloudbees.plugins.credentials.common.IdCredentials;
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
 
 import org.jenkinsci.Symbol;
@@ -28,7 +33,6 @@ public class KeyhubUsernamePasswordBinding extends UsernamePasswordBinding {
     @DataBoundConstructor
     public KeyhubUsernamePasswordBinding(String variable, String credentialsId) {
         super(variable, credentialsId);
-        System.out.println("Custom Binding constructor triggered.");
     }
 
     @Override
@@ -39,7 +43,6 @@ public class KeyhubUsernamePasswordBinding extends UsernamePasswordBinding {
     @Override
     public SingleEnvironment bindSingle(@NonNull Run<?, ?> build, @Nullable FilePath workspace,
             @Nullable Launcher launcher, @NonNull TaskListener listener) throws IOException, InterruptedException {
-        StandardUsernamePasswordCredentials credentials = getCredentials(build);
         ClientCredentials clientCredentials = new ClientCredentials();
         for (ItemGroup p = build.getParent().getParent(); p instanceof AbstractFolder; p = ((AbstractFolder) p)
                 .getParent()) {
@@ -48,8 +51,14 @@ public class KeyhubUsernamePasswordBinding extends UsernamePasswordBinding {
             clientCredentials.setClientId(folderProperty.getConfiguration().getVaultId());
             clientCredentials.setClientSecret(Secret.fromString(folderProperty.getConfiguration().getVaultSecret()));
         }
+
         KeyHubCredentialsStore store = new KeyHubCredentialsStore();
-        store.getCredentials(clientCredentials);
+        List<Credentials> creds = store.getCredentials(clientCredentials);
+        IdCredentials cred;
+        cred = CredentialsProvider.findCredentialById(getCredentialsId(), IdCredentials.class, build);
+        StandardUsernamePasswordCredentials credentials = type().cast(cred);
+        Credentials result = CredentialsMatchers.firstOrNull(creds, CredentialsMatchers.withId(getCredentialsId()));
+        StandardUsernamePasswordCredentials cred2 = type().cast(result);
         return new SingleEnvironment(credentials.getUsername() + ':' + credentials.getPassword().getPlainText());
     }
 

@@ -67,6 +67,9 @@ public class KeyHubCredentialsStore extends CredentialsStore {
     public List<Credentials> getCredentials(ClientCredentials clientCredentials) {
         if (Jenkins.get().hasPermission(CredentialsProvider.VIEW)) {
             provider.setClientCredentials(clientCredentials);
+            System.out
+                    .println("Provider's current clientCredentials: " + provider.getClientCredentials().getClientId());
+                    + provider.getCredentials(Credentials.class, Jenkins.get(), ACL.SYSTEM));
             return provider.getCredentials(Credentials.class, Jenkins.get(), ACL.SYSTEM);
         } else {
             return Collections.emptyList();
