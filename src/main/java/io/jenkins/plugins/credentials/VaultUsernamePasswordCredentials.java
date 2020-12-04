@@ -11,7 +11,6 @@ public class VaultUsernamePasswordCredentials extends BaseStandardCredentials im
 
     public VaultUsernamePasswordCredentials(String id, String uuid) {
         super(id, uuid);
-
     }
 
     @Override
@@ -25,5 +24,4 @@ public class VaultUsernamePasswordCredentials extends BaseStandardCredentials im
         // TODO Auto-generated method stub
         return null;
     }
-    
 }

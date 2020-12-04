@@ -51,15 +51,6 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
         return Suppliers.memoizeWithExpiration(base::get, duration.toMillis(), TimeUnit.MILLISECONDS)::get;
     }
 
-    public static void main(String[] args) {
-        // fetchCredentials();
-        ClientCredentials clientCredentials = new ClientCredentials();
-        clientCredentials.setClientId("e9a17a85-bfdd-4968-810e-0e48c39f6ea9");
-        clientCredentials.setClientSecret(Secret.fromString("oFvsKMt1h3pIRqiSjQOyXezR-6FuBHlYGVQFyBkE"));
-        KeyHubCredentialsStore store = new KeyHubCredentialsStore();
-        store.getCredentials(clientCredentials);
-    }
-
     private Collection<StandardUsernamePasswordCredentials> fetchCredentials() {
         ClientCredentials clientCredentials = new ClientCredentials();
         GlobalPluginConfiguration keyhubGlobalConfig = GlobalPluginConfiguration.all()
