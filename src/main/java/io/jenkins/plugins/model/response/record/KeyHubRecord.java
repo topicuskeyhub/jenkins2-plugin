@@ -1,7 +1,6 @@
 package io.jenkins.plugins.model.response.record;
 
 import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.jenkins.plugins.model.response.Link;

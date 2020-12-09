@@ -1,13 +1,8 @@
 package io.jenkins.plugins.vault;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
 
 import com.cloudbees.hudson.plugins.folder.AbstractFolder;
-import com.cloudbees.plugins.credentials.CredentialsMatchers;
-import com.cloudbees.plugins.credentials.CredentialsProvider;
-import com.cloudbees.plugins.credentials.matchers.IdMatcher;
 
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -21,12 +16,10 @@ import hudson.model.AbstractProject;
 import hudson.model.ItemGroup;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import hudson.security.ACL;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.util.Secret;
 import io.jenkins.plugins.configuration.FolderKeyHubVaultConfiguration;
 import io.jenkins.plugins.configuration.VaultConfiguration;
-import io.jenkins.plugins.credentials.KeyHubClientCredentials;
 import io.jenkins.plugins.model.ClientCredentials;
 import jenkins.tasks.SimpleBuildWrapper;
 
@@ -58,16 +51,6 @@ public class VaultBuildWrapper extends SimpleBuildWrapper {
         vaultAccessor.connect();
     }
 
-    public KeyHubClientCredentials retrieveVaultCredentials(Run build) {
-        String id = configuration.getVaultId();
-
-        List<KeyHubClientCredentials> credentials = CredentialsProvider.lookupCredentials(KeyHubClientCredentials.class,
-                build.getParent(), ACL.SYSTEM, Collections.emptyList());
-        KeyHubClientCredentials credential = CredentialsMatchers.firstOrNull(credentials, new IdMatcher(id));
-
-        return credential;
-    }
-
     @Override
     public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener,
             EnvVars initialEnvironment) throws IOException, InterruptedException {
@@ -75,7 +58,6 @@ public class VaultBuildWrapper extends SimpleBuildWrapper {
         if (configuration != null) {
             provideValuesFromVault(context, build, initialEnvironment);
         }
-
     }
 
     public ClientCredentials getClientCredentials() {

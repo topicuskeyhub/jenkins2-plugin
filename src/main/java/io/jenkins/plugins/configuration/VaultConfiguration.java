@@ -10,6 +10,7 @@ import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 import hudson.util.Secret;
+import io.jenkins.plugins.model.ClientCredentials;
 
 public class VaultConfiguration extends AbstractDescribableImpl<VaultConfiguration> implements Serializable {
 
@@ -43,6 +44,10 @@ public class VaultConfiguration extends AbstractDescribableImpl<VaultConfigurati
     @DataBoundSetter
     public void setVaultSecret(String vaultSecret) {
         this.vaultSecret = vaultSecret;
+    }
+
+    public ClientCredentials getClientCredentials() {
+        return new ClientCredentials(getVaultId(), Secret.fromString(getVaultSecret()));
     }
 
     @Extension

@@ -2,9 +2,9 @@ package io.jenkins.plugins.vault;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 
 import javax.ws.rs.client.Entity;
-
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.Response;
 
@@ -15,12 +15,12 @@ import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.resteasy.client.jaxrs.internal.BasicAuthentication;
 
 import hudson.util.Secret;
+import io.jenkins.plugins.model.ClientCredentials;
+import io.jenkins.plugins.model.response.KeyHubTokenResponse;
 import io.jenkins.plugins.model.response.group.KeyHubGroup;
 import io.jenkins.plugins.model.response.group.ListOfKeyHubGroups;
 import io.jenkins.plugins.model.response.record.KeyHubRecord;
 import io.jenkins.plugins.model.response.record.ListOfKeyHubRecords;
-import io.jenkins.plugins.model.ClientCredentials;
-import io.jenkins.plugins.model.response.KeyHubTokenResponse;
 
 public class VaultAccessor implements IVaultAccessor {
 
@@ -83,7 +83,7 @@ public class VaultAccessor implements IVaultAccessor {
         this.keyhubToken = target.request().post(Entity.form(connectionRequest), KeyHubTokenResponse.class);
     }
 
-    public ListOfKeyHubGroups fetchGroupData() throws IOException {
+    public List<KeyHubGroup> fetchGroupData() throws IOException {
         final String ENDPOINT = "https://keyhub.topicusonderwijs.nl/keyhub/rest/v1/group";
         ResteasyWebTarget target = restClientBuilder.getClient().target(ENDPOINT);
         ListOfKeyHubGroups keyhubGroups;
@@ -94,26 +94,29 @@ public class VaultAccessor implements IVaultAccessor {
             String json = response.readEntity(String.class);
             keyhubGroups = restClientBuilder.getMapper().readValue(json, ListOfKeyHubGroups.class);
         }
-        return keyhubGroups;
+        return keyhubGroups.getGroups();
     }
 
-    public ListOfKeyHubRecords fetchRecordsFromVault(KeyHubGroup group) throws IOException {
-        final String ENDPOINT = group.getHref() + "/vault/record";
-        ListOfKeyHubRecords keyhubRecords;
-        ResteasyWebTarget target = restClientBuilder.getClient().target(ENDPOINT);
-        try (Response response = target.request().header("Authorization", "Bearer " + keyhubToken.getToken())
-                .header("Content-Type", "application/json")
-                .header("Accept", "application/vnd.topicus.keyhub+json;version=44").get()) {
-            String json = response.readEntity(String.class);
-            keyhubRecords = restClientBuilder.getMapper().readValue(json, ListOfKeyHubRecords.class);
+    public List<KeyHubRecord> fetchRecordsFromVault(List<KeyHubGroup> groups) throws IOException {
+        String ENDPOINT;
+        ListOfKeyHubRecords keyhubRecords = new ListOfKeyHubRecords();
+        for (KeyHubGroup group : groups) {
+            ENDPOINT = group.getHref() + "/vault/record";
+            ResteasyWebTarget target = restClientBuilder.getClient().target(ENDPOINT);
+            try (Response response = target.request().header("Authorization", "Bearer " + keyhubToken.getToken())
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/vnd.topicus.keyhub+json;version=44").get()) {
+                String json = response.readEntity(String.class);
+                keyhubRecords = restClientBuilder.getMapper().readValue(json, ListOfKeyHubRecords.class);
+            }
         }
-        return keyhubRecords;
+        return keyhubRecords.getRecords();
     }
 
     // TODO map Json Response with Secret
-    public void fetchRecordSecret(KeyHubRecord record) throws UnsupportedEncodingException {
+    public Secret fetchRecordSecret(String href) throws UnsupportedEncodingException {
         String param = "?additional=secret";
-        final String ENDPOINT = record.getHref() + param;
+        final String ENDPOINT = href + param;
         ResteasyWebTarget target = restClientBuilder.getClient().target(ENDPOINT);
         try (Response response = target.request().header("Authorization", "Bearer " + keyhubToken.getToken())
                 .header("Content-Type", "application/json")
@@ -122,7 +125,7 @@ public class VaultAccessor implements IVaultAccessor {
             String json = response.readEntity(String.class);
             Secret recordSecret = Secret.fromString(JsonPath.parse(json).read("$.additionalObjects..secret..password")
                     .toString().replace("[", "").replace("\"", "").replace("]", ""));
-            record.setRecordSecret(recordSecret.getEncryptedValue());
+            return recordSecret;
         }
     }
 }

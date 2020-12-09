@@ -1,75 +1,65 @@
 package io.jenkins.plugins.credentials;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.cloudbees.hudson.plugins.folder.AbstractFolder;
+import com.cloudbees.hudson.plugins.folder.Folder;
 import com.cloudbees.plugins.credentials.Credentials;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
-import com.cloudbees.plugins.credentials.CredentialsScope;
 import com.cloudbees.plugins.credentials.CredentialsStore;
-import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
-import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl;
-import com.google.common.base.Suppliers;
+import com.cloudbees.plugins.credentials.common.IdCredentials;
 
 import org.acegisecurity.Authentication;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
+import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.ModelObject;
-import hudson.util.Secret;
+import hudson.security.ACL;
 import io.jenkins.plugins.configuration.FolderKeyHubVaultConfiguration;
 import io.jenkins.plugins.configuration.GlobalPluginConfiguration;
 import io.jenkins.plugins.model.ClientCredentials;
-import io.jenkins.plugins.model.response.group.ListOfKeyHubGroups;
-import io.jenkins.plugins.model.response.record.ListOfKeyHubRecords;
+import io.jenkins.plugins.model.response.group.KeyHubGroup;
+import io.jenkins.plugins.model.response.record.KeyHubRecord;
 import io.jenkins.plugins.vault.VaultAccessor;
-import jenkins.model.Jenkins;
 
 @Extension
 public class KeyHubCredentialsProvider extends CredentialsProvider {
 
-    private final KeyHubCredentialsStore store = new KeyHubCredentialsStore(this);
     private ClientCredentials clientCredentials;
+    private ConcurrentHashMap<String, KeyHubRecord> keyhubRecords = new ConcurrentHashMap<>();
 
-    private Supplier<Collection<StandardUsernamePasswordCredentials>> credentialsSupplier = memoizeWithExpiration(
-            this::fetchCredentials, Duration.ofMinutes(5));
-
-    public void refreshCredentials() {
-        credentialsSupplier = memoizeWithExpiration(this::fetchCredentials, Duration.ofMinutes(5));
-    }
-
-    private <T> Supplier<T> memoizeWithExpiration(Supplier<T> base, Duration duration) {
-        return Suppliers.memoizeWithExpiration(base::get, duration.toMillis(), TimeUnit.MILLISECONDS)::get;
-    }
-
-    private Collection<StandardUsernamePasswordCredentials> fetchCredentials() {
-        ClientCredentials clientCredentials = new ClientCredentials();
+    private Collection<KeyHubUsernamePasswordCredentials> fetchCredentials(ClientCredentials clientCredentials) {
         GlobalPluginConfiguration keyhubGlobalConfig = GlobalPluginConfiguration.all()
                 .get(GlobalPluginConfiguration.class);
         if (keyhubGlobalConfig == null) {
             throw new NullPointerException("No global config was entered."); // Make a custom runtime exception
         }
-        VaultAccessor va = new VaultAccessor(this.clientCredentials);
-        ListOfKeyHubRecords khRecords = new ListOfKeyHubRecords();
-        ListOfKeyHubGroups khGroups = new ListOfKeyHubGroups();
-        List<StandardUsernamePasswordCredentials> jRecords = new ArrayList<>();
+
+        VaultAccessor va = new VaultAccessor(clientCredentials);
+        List<KeyHubGroup> khGroups = new ArrayList<>();
+        List<KeyHubRecord> khRecords = new ArrayList<>();
+
+        List<KeyHubUsernamePasswordCredentials> jRecords = new ArrayList<>();
         try {
             va.connect();
             khGroups = va.fetchGroupData();
-            khRecords = va.fetchRecordsFromVault(khGroups.getGroups().get(0));
-            for (int i = 0; i < khRecords.getItems().size(); i++) {
-                jRecords.add(new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL,
-                        khRecords.getItems().get(i).getUUID(), khRecords.getItems().get(i).getName(),
-                        khRecords.getItems().get(i).getUsername(), ""));
+            khRecords = va.fetchRecordsFromVault(khGroups);
+            for (KeyHubGroup group : khGroups) {
+                for (int i = 0; i < khRecords.size(); i++) {
+                    jRecords.add(KeyHubUsernamePasswordCredentials.Builder.newInstance().id(khRecords.get(i).getUUID())
+                            .recordName(khRecords.get(i).getName()).va(va).href(khRecords.get(i).getHref())
+                            .username(khRecords.get(i).getUsername()).build());
+                }
             }
             return jRecords;
 
@@ -83,24 +73,31 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
     @Override
     public <C extends Credentials> List<C> getCredentials(Class<C> type, ItemGroup itemGroup,
             @Nullable Authentication authentication) {
-        List<FolderKeyHubVaultConfiguration> listOfClientCredentials;
-        List<AbstractFolder> foldersList = itemGroup.getAllItems(AbstractFolder.class);
 
-        final List<C> list = new ArrayList<>();
-        if (this.clientCredentials == null) {
-        }
+        List<C> result = new ArrayList<C>();
+        Set<String> ids = new HashSet<String>();
 
-        try {
-            for (StandardUsernamePasswordCredentials credential : credentialsSupplier.get()) {
-                if (type.isAssignableFrom(credential.getClass())) {
-                    list.add(type.cast(credential));
+        if (ACL.SYSTEM.equals(authentication)) {
+            while (itemGroup != null) {
+                if (itemGroup instanceof Folder) {
+                    final AbstractFolder<?> folder = AbstractFolder.class.cast(itemGroup);
+                    FolderKeyHubVaultConfiguration property = folder.getProperties()
+                            .get(FolderKeyHubVaultConfiguration.class);
+                    ClientCredentials folderClientCredentials = property.getConfiguration().getClientCredentials();
+                    for (Credentials credentials : fetchCredentials(folderClientCredentials)) {
+                        if (!(credentials instanceof IdCredentials) || ids.add(((IdCredentials) credentials).getId())) {
+                            result.add(type.cast(credentials));
+                        }
+                    }
                 }
-                // log if it doesn't match?
+                if (itemGroup instanceof Item) {
+                    itemGroup = Item.class.cast(itemGroup).getParent();
+                } else {
+                    break;
+                }
             }
-            return list;
-        } catch (RuntimeException e) {
         }
-        return Collections.emptyList();
+        return result;
     }
 
     public ClientCredentials getClientCredentials() {
@@ -118,7 +115,10 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
 
     @Override
     public CredentialsStore getStore(ModelObject object) {
-        return object == Jenkins.get() ? store : null;
+        ItemGroup owner = (ItemGroup) object;
+
+        return new KeyHubCredentialsStore(this, owner);
+
     }
 
     @Override
