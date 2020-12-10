@@ -33,6 +33,10 @@ public class VaultAccessor implements IVaultAccessor {
 
     public VaultAccessor() {
     }
+    
+    public IVaultAccessor getVaultAccessor() {
+        return this;
+    }
 
     public VaultAccessor(ClientCredentials credentials) {
         this.clientCredentials = credentials;

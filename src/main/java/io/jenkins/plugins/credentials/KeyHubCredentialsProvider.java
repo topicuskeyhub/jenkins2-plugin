@@ -56,9 +56,9 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
             khRecords = va.fetchRecordsFromVault(khGroups);
             for (KeyHubGroup group : khGroups) {
                 for (int i = 0; i < khRecords.size(); i++) {
-                    jRecords.add(KeyHubUsernamePasswordCredentials.Builder.newInstance().id(khRecords.get(i).getUUID())
-                            .recordName(khRecords.get(i).getName()).va(va).href(khRecords.get(i).getHref())
-                            .username(khRecords.get(i).getUsername()).build());
+                    jRecords.add(KeyHubUsernamePasswordCredentials.KeyHubCredentialsBuilder.newInstance()
+                            .id(khRecords.get(i).getUUID()).recordName(khRecords.get(i).getName()).va(va)
+                            .href(khRecords.get(i).getHref()).username(khRecords.get(i).getUsername()).build());
                 }
             }
             return jRecords;
@@ -115,6 +115,9 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
 
     @Override
     public CredentialsStore getStore(ModelObject object) {
+        if (!(object instanceof ItemGroup)) {
+            return null;
+        }
         ItemGroup owner = (ItemGroup) object;
 
         return new KeyHubCredentialsStore(this, owner);

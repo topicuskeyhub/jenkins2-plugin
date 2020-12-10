@@ -8,12 +8,13 @@ import io.jenkins.plugins.vault.IVaultAccessor;
 public abstract class AbstractKeyHubCredentials extends BaseStandardCredentials {
 
     protected String recordName;
-    protected transient IVaultAccessor va;
+    protected transient final IVaultAccessor va;
     protected String href;
     protected String username;
 
-    public AbstractKeyHubCredentials(String id, String description) {
+    public AbstractKeyHubCredentials(String id, String description, IVaultAccessor va) {
         super(id, description);
+        this.va = va;
         // TODO Auto-generated constructor stub
     }
 
@@ -25,9 +26,9 @@ public abstract class AbstractKeyHubCredentials extends BaseStandardCredentials 
         this.recordName = recordName;
     }
 
-    public void setVaultAccessor(IVaultAccessor va) {
-        this.va = va;
-    }
+    // public void setVaultAccessor(IVaultAccessor va) {
+    //     this.va = va;
+    // }
 
     public String getHref() {
         return this.href;
