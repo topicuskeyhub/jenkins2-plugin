@@ -1,4 +1,4 @@
-package io.jenkins.plugins.credentials;
+package io.jenkins.plugins.credentials.username_password;
 
 import java.io.IOException;
 
@@ -7,6 +7,7 @@ import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredenti
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.util.Secret;
+import io.jenkins.plugins.credentials.AbstractKeyHubCredentials;
 import io.jenkins.plugins.vault.IVaultAccessor;
 
 public class KeyHubUsernamePasswordCredentials extends AbstractKeyHubCredentials
@@ -14,7 +15,7 @@ public class KeyHubUsernamePasswordCredentials extends AbstractKeyHubCredentials
 
     public KeyHubUsernamePasswordCredentials(KeyHubCredentialsBuilder builder) {
         super(builder.id, builder.recordName, builder.va);
-        //this.va = builder.va;
+        this.va = builder.va;
         this.href = builder.href;
         this.username = builder.username;
     }

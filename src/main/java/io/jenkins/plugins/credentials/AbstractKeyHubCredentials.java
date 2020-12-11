@@ -8,7 +8,7 @@ import io.jenkins.plugins.vault.IVaultAccessor;
 public abstract class AbstractKeyHubCredentials extends BaseStandardCredentials {
 
     protected String recordName;
-    protected transient final IVaultAccessor va;
+    protected transient IVaultAccessor va;
     protected String href;
     protected String username;
 
@@ -26,9 +26,9 @@ public abstract class AbstractKeyHubCredentials extends BaseStandardCredentials 
         this.recordName = recordName;
     }
 
-    // public void setVaultAccessor(IVaultAccessor va) {
-    //     this.va = va;
-    // }
+    public void setVaultAccessor(IVaultAccessor va) {
+        this.va = va;
+    }
 
     public String getHref() {
         return this.href;
@@ -47,5 +47,4 @@ public abstract class AbstractKeyHubCredentials extends BaseStandardCredentials 
     }
 
     public abstract Secret getPassword();
-
 }

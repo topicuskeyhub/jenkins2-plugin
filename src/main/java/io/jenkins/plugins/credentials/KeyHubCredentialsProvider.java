@@ -31,6 +31,7 @@ import io.jenkins.plugins.model.ClientCredentials;
 import io.jenkins.plugins.model.response.group.KeyHubGroup;
 import io.jenkins.plugins.model.response.record.KeyHubRecord;
 import io.jenkins.plugins.vault.VaultAccessor;
+import io.jenkins.plugins.credentials.username_password.KeyHubUsernamePasswordCredentials;
 
 @Extension
 public class KeyHubCredentialsProvider extends CredentialsProvider {
