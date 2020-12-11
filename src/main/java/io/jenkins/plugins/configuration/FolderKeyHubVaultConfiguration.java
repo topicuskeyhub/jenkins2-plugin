@@ -45,7 +45,6 @@ public class FolderKeyHubVaultConfiguration extends AbstractFolderProperty<Abstr
 
                 vConfig = folderProperty.getConfiguration();
             }
-            System.out.println("vConfig: " + vConfig.getVaultId());
             return vConfig;
         }
     }

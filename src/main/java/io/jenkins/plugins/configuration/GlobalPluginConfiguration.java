@@ -16,6 +16,10 @@ public class GlobalPluginConfiguration extends GlobalConfiguration {
         load();
     }
 
+    public GlobalPluginConfiguration(String keyhubURI) {
+        this.keyhubURI = keyhubURI;
+    }
+
     public static GlobalPluginConfiguration getInstance() {
         return all().get(GlobalPluginConfiguration.class);
     }
@@ -34,7 +38,6 @@ public class GlobalPluginConfiguration extends GlobalConfiguration {
     @Override
     public synchronized boolean configure(StaplerRequest req, JSONObject json) {
         this.keyhubURI = null;
-        System.out.println(json.toString());
         req.bindJSON(this, json);
         save();
         return true;

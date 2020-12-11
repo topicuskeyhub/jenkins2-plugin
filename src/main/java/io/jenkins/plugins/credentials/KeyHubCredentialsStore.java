@@ -1,20 +1,14 @@
 package io.jenkins.plugins.credentials;
 
 import java.io.IOException;
-import java.time.Duration;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 
 import com.cloudbees.plugins.credentials.Credentials;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.CredentialsStore;
 import com.cloudbees.plugins.credentials.CredentialsStoreAction;
-import com.cloudbees.plugins.credentials.common.IdCredentials;
 import com.cloudbees.plugins.credentials.domains.Domain;
-import com.google.common.base.Suppliers;
 
 import org.acegisecurity.Authentication;
 import org.jenkins.ui.icon.Icon;
@@ -24,6 +18,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import hudson.model.ItemGroup;
 import hudson.model.ModelObject;
 import hudson.security.ACL;
 import hudson.security.Permission;
@@ -33,15 +28,23 @@ public class KeyHubCredentialsStore extends CredentialsStore {
 
     private final KeyHubCredentialsProvider provider;
     private final KeyHubCredentialsStoreAction action = new KeyHubCredentialsStoreAction(this);
+    private ItemGroup itemGroup;
 
-    public KeyHubCredentialsStore(KeyHubCredentialsProvider provider) {
+    public KeyHubCredentialsStore(KeyHubCredentialsProvider provider, ItemGroup itemGroup) {
         super(KeyHubCredentialsProvider.class);
         this.provider = provider;
+        this.itemGroup = itemGroup;
     }
 
+    public KeyHubCredentialsStore() {
+        super(KeyHubCredentialsProvider.class);
+        this.provider = new KeyHubCredentialsProvider();
+    }
+
+    @NonNull
     @Override
     public ModelObject getContext() {
-        return Jenkins.get();
+        return itemGroup;
     }
 
     @Override
@@ -52,25 +55,25 @@ public class KeyHubCredentialsStore extends CredentialsStore {
     @Override
     public List<Credentials> getCredentials(Domain domain) {
         if (Domain.global().equals(domain) && Jenkins.get().hasPermission(CredentialsProvider.VIEW)) {
-            return provider.getCredentials(Credentials.class, Jenkins.get(), ACL.SYSTEM);
-        } else {
-            return Collections.emptyList();
+            return provider.getCredentials(Credentials.class, itemGroup, ACL.SYSTEM);
         }
+        return Collections.emptyList();
+
     }
 
     @Override
     public boolean addCredentials(Domain domain, Credentials credentials) throws IOException {
-        throw new UnsupportedOperationException("Jenkins may not add credentials to the KeyHub Vault");
+        return false;
     }
 
     @Override
     public boolean removeCredentials(Domain domain, Credentials credentials) throws IOException {
-        throw new UnsupportedOperationException("Jenkins may not remove credentials from the KeyHub Vault");
+        return false;
     }
 
     @Override
     public boolean updateCredentials(Domain domain, Credentials current, Credentials replacement) throws IOException {
-        throw new UnsupportedOperationException("Jenkins may not update credentials of the KeyHub Vault");
+        return false;
     }
 
     @Nullable
@@ -108,16 +111,14 @@ public class KeyHubCredentialsStore extends CredentialsStore {
             return store;
         }
 
-        // @Override
-        // public String getIconFileName() {
-        // return isVisible() ?
-        // "/plugin/gcp-secrets-manager-credentials-provider/images/32x32/icon.png" :
-        // null;
-        // }
+        @Override
+        public String getIconFileName() {
+            return isVisible() ? "/plugin/keyhub-vault-plugin/images/32x32/alauda.png" : null;
+        }
 
         @Override
         public String getIconClassName() {
-            return isVisible() ? ICON_CLASS : null;
+            return isVisible() ? "icon-keyhub-credentials-vault" : null;
         }
 
         @Override

@@ -8,7 +8,7 @@ public class ListOfKeyHubRecords {
     private List<KeyHubRecord> records;
 
     @JsonProperty("items")
-    public List<KeyHubRecord> getItems() {
+    public List<KeyHubRecord> getRecords() {
         return records;
     }
 
