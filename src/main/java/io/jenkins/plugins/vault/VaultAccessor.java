@@ -118,7 +118,7 @@ public class VaultAccessor implements IVaultAccessor {
     }
 
     // TODO map Json Response with Secret
-    public Secret fetchRecordSecret(String href) throws UnsupportedEncodingException {
+    public String fetchRecordSecret(String href) throws UnsupportedEncodingException {
         String param = "?additional=secret";
         final String ENDPOINT = href + param;
         ResteasyWebTarget target = restClientBuilder.getClient().target(ENDPOINT);
@@ -127,8 +127,8 @@ public class VaultAccessor implements IVaultAccessor {
                 .header("Accept", "application/vnd.topicus.keyhub+json;version=44")
                 .header("topicus-Vault-session", keyhubToken.getVaultSession()).get()) {
             String json = response.readEntity(String.class);
-            Secret recordSecret = Secret.fromString(JsonPath.parse(json).read("$.additionalObjects..secret..password")
-                    .toString().replace("[", "").replace("\"", "").replace("]", ""));
+            String recordSecret = JsonPath.parse(json).read("$.additionalObjects..secret..password")
+                    .toString().replace("[", "").replace("\"", "").replace("]", "");
             return recordSecret;
         }
     }

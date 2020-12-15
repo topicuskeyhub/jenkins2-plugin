@@ -1,6 +1,7 @@
 package io.jenkins.plugins.credentials;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -8,6 +9,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import com.cloudbees.hudson.plugins.folder.AbstractFolder;
 import com.cloudbees.hudson.plugins.folder.Folder;
@@ -15,6 +18,7 @@ import com.cloudbees.plugins.credentials.Credentials;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.CredentialsStore;
 import com.cloudbees.plugins.credentials.common.IdCredentials;
+import com.cloudbees.plugins.credentials.common.StandardCredentials;
 
 import org.acegisecurity.Authentication;
 
@@ -39,6 +43,32 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
     private ClientCredentials clientCredentials;
     private ConcurrentHashMap<String, KeyHubRecord> keyhubRecords = new ConcurrentHashMap<>();
 
+    private final Supplier<Collection<StandardCredentials>> credentialsSupplier = memoizeWithExpiration(
+            CredentialsSupplier.standard(),
+            () -> PluginConfiguration.normalize(PluginConfiguration.getInstance().getCache()));
+
+    private static <T> Supplier<T> memoizeWithExpiration(Supplier<T> base, Supplier<Duration> duration) {
+        return CustomSuppliers.memoizeWithExpiration(base, duration);
+    }
+
+    @Override
+    public <C extends Credentials> List<C> getCredentials(Class<C> type, ItemGroup itemGroup,
+            @Nullable Authentication authentication) {
+        if (ACL.SYSTEM.equals(authentication)) {
+            Collection<StandardCredentials> allCredentials = Collections.emptyList();
+            try {
+                allCredentials = credentialsSupplier.get();
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+                throw new NullPointerException();
+            }
+
+            return allCredentials.stream().filter(c -> type.isAssignableFrom(c.getClass())).map(type::cast)
+                    .collect(Collectors.toList());
+        }
+        return Collections.emptyList();
+    }
+
     private Collection<KeyHubUsernamePasswordCredentials> fetchCredentials(ClientCredentials clientCredentials) {
         GlobalPluginConfiguration keyhubGlobalConfig = GlobalPluginConfiguration.all()
                 .get(GlobalPluginConfiguration.class);
@@ -58,7 +88,7 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
             for (KeyHubGroup group : khGroups) {
                 for (int i = 0; i < khRecords.size(); i++) {
                     jRecords.add(KeyHubUsernamePasswordCredentials.KeyHubCredentialsBuilder.newInstance()
-                            .id(khRecords.get(i).getUUID()).recordName(khRecords.get(i).getName()).va(va)
+                            .id(khRecords.get(i).getUUID()).recordName(khRecords.get(i).getName())
                             .href(khRecords.get(i).getHref()).username(khRecords.get(i).getUsername()).build());
                 }
             }
@@ -68,37 +98,6 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
             e.printStackTrace();
         }
         return Collections.emptyList();
-    }
-
-    @NonNull
-    @Override
-    public <C extends Credentials> List<C> getCredentials(Class<C> type, ItemGroup itemGroup,
-            @Nullable Authentication authentication) {
-
-        List<C> result = new ArrayList<C>();
-        Set<String> ids = new HashSet<String>();
-
-        if (ACL.SYSTEM.equals(authentication)) {
-            while (itemGroup != null) {
-                if (itemGroup instanceof Folder) {
-                    final AbstractFolder<?> folder = AbstractFolder.class.cast(itemGroup);
-                    FolderKeyHubVaultConfiguration property = folder.getProperties()
-                            .get(FolderKeyHubVaultConfiguration.class);
-                    ClientCredentials folderClientCredentials = property.getConfiguration().getClientCredentials();
-                    for (Credentials credentials : fetchCredentials(folderClientCredentials)) {
-                        if (!(credentials instanceof IdCredentials) || ids.add(((IdCredentials) credentials).getId())) {
-                            result.add(type.cast(credentials));
-                        }
-                    }
-                }
-                if (itemGroup instanceof Item) {
-                    itemGroup = Item.class.cast(itemGroup).getParent();
-                } else {
-                    break;
-                }
-            }
-        }
-        return result;
     }
 
     public ClientCredentials getClientCredentials() {
