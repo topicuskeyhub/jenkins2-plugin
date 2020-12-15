@@ -20,7 +20,7 @@ public class KeyHubUsernamePasswordCredentialsSnapshotTaker
     public KeyHubUsernamePasswordCredentials snapshot(KeyHubUsernamePasswordCredentials credential) {
         return KeyHubUsernamePasswordCredentials.KeyHubCredentialsBuilder.newInstance().id(credential.getId())
                 .recordName(credential.getRecordName()).href(credential.getHref()).username(credential.getUsername())
-                .build();
+                .password(new SecretSnapshot(credential.getPassword())).build();
     }
 
     private static class SecretSnapshot extends Snapshot<Secret> {
