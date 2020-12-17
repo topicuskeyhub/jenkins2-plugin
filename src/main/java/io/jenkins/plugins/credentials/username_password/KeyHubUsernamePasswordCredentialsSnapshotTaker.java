@@ -12,13 +12,11 @@ public class KeyHubUsernamePasswordCredentialsSnapshotTaker
 
     @Override
     public Class<KeyHubUsernamePasswordCredentials> type() {
-        System.out.println("UsernamePasswordCredentials Type Snapshot taken.");
         return KeyHubUsernamePasswordCredentials.class;
     }
 
     @Override
     public KeyHubUsernamePasswordCredentials snapshot(KeyHubUsernamePasswordCredentials credential) {
-        System.out.println("UsernamePasswordCredentials Snapshot was taken.");
         return KeyHubUsernamePasswordCredentials.KeyHubCredentialsBuilder.newInstance().id(credential.getId())
                 .recordName(credential.getRecordName()).href(credential.getHref()).username(credential.getUsername())
                 .password(new SecretSnapshot(credential.getPassword())).build();
@@ -27,7 +25,6 @@ public class KeyHubUsernamePasswordCredentialsSnapshotTaker
     private static class SecretSnapshot extends Snapshot<Secret> {
         SecretSnapshot(Secret value) {
             super(value);
-            System.out.println("Constructor of SecretSnapshot is being called.");
         }
     }
 

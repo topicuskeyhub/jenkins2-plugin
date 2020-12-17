@@ -86,9 +86,6 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
         List<KeyHubGroup> khGroups = new ArrayList<>();
         List<KeyHubRecord> khRecords = new ArrayList<>();
 
-        System.out.println("Looking up Extension Snapshot: " + Jenkins.get().getExtensionList(CredentialsSnapshotTaker.class));
-        System.out.println("Looking up CredentialsProvider: " + Jenkins.get().getExtensionList(CredentialsProvider.class));
-
         List<KeyHubUsernamePasswordCredentials> jRecords = new ArrayList<>();
         try {
             va.connect();

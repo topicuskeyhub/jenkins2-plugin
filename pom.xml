@@ -18,7 +18,7 @@
         <java.level>8</java.level>
     </properties>
 
-    <name>AAKeyHub Vault Credentials Provider</name>
+    <name>KeyHub Vault Credentials Provider</name>
 
     <build>
         <plugins>
