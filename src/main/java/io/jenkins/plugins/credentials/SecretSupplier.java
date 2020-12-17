@@ -6,13 +6,14 @@ import java.util.function.Supplier;
 import hudson.util.Secret;
 import io.jenkins.plugins.vault.IVaultAccessor;
 
-public class SecretSupplier extends SecretsManager implements Supplier<Secret> {
+public class SecretSupplier implements Supplier<Secret> {
 
-    private IVaultAccessor va;
+    private transient IVaultAccessor va;
     private String href;
 
     public SecretSupplier(IVaultAccessor va, String href) {
-        super(va, href);
+        this.va = va;
+        this.href = href;
     }
 
     @Override
