@@ -14,5 +14,5 @@ public interface IVaultAccessor {
 
     public List<KeyHubRecord> fetchRecordsFromVault(List<KeyHubGroup> groups) throws IOException;
 
-    public String fetchRecordSecret(String href) throws UnsupportedEncodingException;
+    public Secret fetchRecordSecret(String href) throws UnsupportedEncodingException;
 }
