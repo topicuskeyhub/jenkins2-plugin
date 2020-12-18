@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import com.cloudbees.hudson.plugins.folder.AbstractFolder;
 import com.cloudbees.hudson.plugins.folder.Folder;
@@ -27,26 +26,23 @@ import hudson.model.ModelObject;
 import hudson.security.ACL;
 import io.jenkins.plugins.configuration.FolderKeyHubVaultConfiguration;
 import io.jenkins.plugins.configuration.GlobalPluginConfiguration;
+import io.jenkins.plugins.credentials.username_password.KeyHubUsernamePasswordCredentials;
 import io.jenkins.plugins.model.ClientCredentials;
 import io.jenkins.plugins.model.response.group.KeyHubGroup;
 import io.jenkins.plugins.model.response.record.KeyHubRecord;
 import io.jenkins.plugins.vault.VaultAccessor;
-import io.jenkins.plugins.credentials.username_password.KeyHubUsernamePasswordCredentials;
 
 @Extension
 public class KeyHubCredentialsProvider extends CredentialsProvider {
 
-    private ClientCredentials clientCredentials;
-    private ConcurrentHashMap<String, KeyHubRecord> keyhubRecords = new ConcurrentHashMap<>();
-
     private Collection<KeyHubUsernamePasswordCredentials> fetchCredentials(ClientCredentials clientCredentials) {
         GlobalPluginConfiguration keyhubGlobalConfig = GlobalPluginConfiguration.all()
                 .get(GlobalPluginConfiguration.class);
-        if (keyhubGlobalConfig == null) {
-            throw new NullPointerException("No global config was entered."); // Make a custom runtime exception
+        if (keyhubGlobalConfig.getKeyhubURI().isEmpty()) {
+            return Collections.emptyList();
         }
 
-        VaultAccessor va = new VaultAccessor(clientCredentials);
+        VaultAccessor va = new VaultAccessor(clientCredentials, keyhubGlobalConfig.getKeyhubURI());
         List<KeyHubGroup> khGroups = new ArrayList<>();
         List<KeyHubRecord> khRecords = new ArrayList<>();
 
@@ -85,7 +81,15 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
                     FolderKeyHubVaultConfiguration property = folder.getProperties()
                             .get(FolderKeyHubVaultConfiguration.class);
                     ClientCredentials folderClientCredentials = property.getConfiguration().getClientCredentials();
-                    for (Credentials credentials : fetchCredentials(folderClientCredentials)) {
+                    if (folderClientCredentials.getClientId().isEmpty()) {
+                        return Collections.emptyList();
+                    }
+                    Collection<KeyHubUsernamePasswordCredentials> khUsernamePasswordCredentials = fetchCredentials(
+                            folderClientCredentials);
+                    if (khUsernamePasswordCredentials.isEmpty()) {
+                        return Collections.emptyList();
+                    }
+                    for (Credentials credentials : khUsernamePasswordCredentials) {
                         if (!(credentials instanceof IdCredentials) || ids.add(((IdCredentials) credentials).getId())) {
                             result.add(type.cast(credentials));
                         }
@@ -99,14 +103,6 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
             }
         }
         return result;
-    }
-
-    public ClientCredentials getClientCredentials() {
-        return clientCredentials;
-    }
-
-    public void setClientCredentials(ClientCredentials credentials) {
-        this.clientCredentials = credentials;
     }
 
     @Override

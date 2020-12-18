@@ -28,22 +28,28 @@ public class VaultAccessor implements IVaultAccessor {
      *
      */
     private ClientCredentials clientCredentials;
+    private String keyhubGlobalConfiguration;
     private RestClientBuilder restClientBuilder = new RestClientBuilder();
     private KeyHubTokenResponse keyhubToken;
 
     public VaultAccessor() {
     }
-    
+
     public IVaultAccessor getVaultAccessor() {
         return this;
     }
 
-    public VaultAccessor(ClientCredentials credentials) {
+    public VaultAccessor(ClientCredentials credentials, String keyhubGlobalConfiguration) {
         this.clientCredentials = credentials;
+        this.keyhubGlobalConfiguration = keyhubGlobalConfiguration;
     }
 
     public void setCredentials(ClientCredentials credentials) {
         this.clientCredentials = credentials;
+    }
+
+    public void setKeyhubGlobalConfiguration(String keyhubGlobalConfiguration) {
+        this.keyhubGlobalConfiguration = keyhubGlobalConfiguration;
     }
 
     public KeyHubTokenResponse getKeyhubToken() {
@@ -78,7 +84,7 @@ public class VaultAccessor implements IVaultAccessor {
             throw new IllegalStateException("Cannot refresh access token, no secret stored/given.");
         }
 
-        final String AUTH_ENDPOINT = "https://keyhub.topicusonderwijs.nl/login/oauth2/token?authVault=access";
+        final String AUTH_ENDPOINT = keyhubGlobalConfiguration + "/login/oauth2/token?authVault=access";
         Form connectionRequest = new Form().param("grant_type", "client_credentials");
         ResteasyWebTarget target = restClientBuilder.getClient().target(AUTH_ENDPOINT);
         target.register(new BasicAuthentication(clientCredentials.getClientId(),
@@ -88,7 +94,7 @@ public class VaultAccessor implements IVaultAccessor {
     }
 
     public List<KeyHubGroup> fetchGroupData() throws IOException {
-        final String ENDPOINT = "https://keyhub.topicusonderwijs.nl/keyhub/rest/v1/group";
+        final String ENDPOINT = keyhubGlobalConfiguration + "/keyhub/rest/v1/group";
         ResteasyWebTarget target = restClientBuilder.getClient().target(ENDPOINT);
         ListOfKeyHubGroups keyhubGroups;
 
