@@ -12,14 +12,14 @@ import hudson.model.Descriptor;
 import hudson.util.Secret;
 import io.jenkins.plugins.model.ClientCredentials;
 
-public class VaultConfiguration extends AbstractDescribableImpl<VaultConfiguration> implements Serializable {
+public class ClientConfiguration extends AbstractDescribableImpl<ClientConfiguration> implements Serializable {
 
     private String keyhubURI;
-    private String vaultId;
-    private String vaultSecret;
+    private String clientId;
+    private String clientSecret;
 
     @DataBoundConstructor
-    public VaultConfiguration() {
+    public ClientConfiguration() {
         this.keyhubURI = GlobalPluginConfiguration.getInstance().getKeyhubURI();
         // no args constructor
     }
@@ -28,30 +28,30 @@ public class VaultConfiguration extends AbstractDescribableImpl<VaultConfigurati
         return this.keyhubURI;
     }
 
-    public String getVaultId() {
-        return this.vaultId;
+    public String getClientId() {
+        return this.clientId;
     }
 
     @DataBoundSetter
-    public void setVaultId(String vaultId) {
-        this.vaultId = vaultId;
+    public void setClientId(String vaultId) {
+        this.clientId = vaultId;
     }
 
-    public String getVaultSecret() {
-        return this.vaultSecret;
+    public String getClientSecret() {
+        return this.clientSecret;
     }
 
     @DataBoundSetter
-    public void setVaultSecret(String vaultSecret) {
-        this.vaultSecret = vaultSecret;
+    public void setClientSecret(String vaultSecret) {
+        this.clientSecret = vaultSecret;
     }
 
     public ClientCredentials getClientCredentials() {
-        return new ClientCredentials(getVaultId(), Secret.fromString(getVaultSecret()));
+        return new ClientCredentials(getClientId(), Secret.fromString(getClientSecret()));
     }
 
     @Extension
-    public static class DescriptorImpl extends Descriptor<VaultConfiguration> {
+    public static class DescriptorImpl extends Descriptor<ClientConfiguration> {
 
         @Override
         @NonNull

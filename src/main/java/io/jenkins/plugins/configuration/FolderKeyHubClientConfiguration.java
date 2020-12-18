@@ -6,25 +6,22 @@ import com.cloudbees.hudson.plugins.folder.AbstractFolderPropertyDescriptor;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
-import hudson.model.Item;
-import hudson.model.ItemGroup;
 
-public class FolderKeyHubVaultConfiguration extends AbstractFolderProperty<AbstractFolder<?>> {
+public class FolderKeyHubClientConfiguration extends AbstractFolderProperty<AbstractFolder<?>> {
 
-    private final VaultConfiguration configuration;
+    private final ClientConfiguration configuration;
 
     @DataBoundConstructor
-    public FolderKeyHubVaultConfiguration(VaultConfiguration configuration) {
+    public FolderKeyHubClientConfiguration(ClientConfiguration configuration) {
         this.configuration = configuration;
     }
 
-    public FolderKeyHubVaultConfiguration() {
+    public FolderKeyHubClientConfiguration() {
         this.configuration = null;
     }
 
-    public VaultConfiguration getConfiguration() {
+    public ClientConfiguration getConfiguration() {
         return configuration;
     }
 

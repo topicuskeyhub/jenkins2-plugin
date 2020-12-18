@@ -18,20 +18,20 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.util.Secret;
-import io.jenkins.plugins.configuration.FolderKeyHubVaultConfiguration;
-import io.jenkins.plugins.configuration.VaultConfiguration;
+import io.jenkins.plugins.configuration.FolderKeyHubClientConfiguration;
+import io.jenkins.plugins.configuration.ClientConfiguration;
 import io.jenkins.plugins.model.ClientCredentials;
 import jenkins.tasks.SimpleBuildWrapper;
 
 public class VaultBuildWrapper extends SimpleBuildWrapper {
 
     ClientCredentials clientCredentials;
-    VaultConfiguration configuration;
+    ClientConfiguration configuration;
     private transient VaultAccessor vaultAccessor = new VaultAccessor();
     private String vaultUrl;
 
     @DataBoundConstructor
-    public VaultBuildWrapper(VaultConfiguration configuration) {
+    public VaultBuildWrapper(ClientConfiguration configuration) {
         this.configuration = configuration;
     }
 
@@ -41,10 +41,10 @@ public class VaultBuildWrapper extends SimpleBuildWrapper {
 
         for (ItemGroup p = build.getParent().getParent(); p instanceof AbstractFolder; p = ((AbstractFolder) p)
                 .getParent()) {
-            FolderKeyHubVaultConfiguration folderProperty = ((AbstractFolder<?>) p).getProperties()
-                    .get(FolderKeyHubVaultConfiguration.class);
-            buildCredentials.setClientId(folderProperty.getConfiguration().getVaultId());
-            buildCredentials.setClientSecret(Secret.fromString(folderProperty.getConfiguration().getVaultSecret()));
+            FolderKeyHubClientConfiguration folderProperty = ((AbstractFolder<?>) p).getProperties()
+                    .get(FolderKeyHubClientConfiguration.class);
+            buildCredentials.setClientId(folderProperty.getConfiguration().getClientId());
+            buildCredentials.setClientSecret(Secret.fromString(folderProperty.getConfiguration().getClientSecret()));
 
         }
         vaultAccessor.setCredentials(buildCredentials);
@@ -68,12 +68,12 @@ public class VaultBuildWrapper extends SimpleBuildWrapper {
         this.clientCredentials = clientCredentials;
     }
 
-    public VaultConfiguration getConfiguration() {
+    public ClientConfiguration getConfiguration() {
         return this.configuration;
     }
 
     @DataBoundSetter
-    public void setConfiguration(VaultConfiguration configuration) {
+    public void setConfiguration(ClientConfiguration configuration) {
         this.configuration = configuration;
     }
 

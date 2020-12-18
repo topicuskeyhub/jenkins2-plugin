@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import com.cloudbees.hudson.plugins.folder.AbstractFolder;
 import com.cloudbees.hudson.plugins.folder.Folder;
@@ -24,7 +23,7 @@ import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.ModelObject;
 import hudson.security.ACL;
-import io.jenkins.plugins.configuration.FolderKeyHubVaultConfiguration;
+import io.jenkins.plugins.configuration.FolderKeyHubClientConfiguration;
 import io.jenkins.plugins.configuration.GlobalPluginConfiguration;
 import io.jenkins.plugins.credentials.username_password.KeyHubUsernamePasswordCredentials;
 import io.jenkins.plugins.model.ClientCredentials;
@@ -34,9 +33,6 @@ import io.jenkins.plugins.vault.VaultAccessor;
 
 @Extension
 public class KeyHubCredentialsProvider extends CredentialsProvider {
-
-    private ClientCredentials clientCredentials;
-    private ConcurrentHashMap<String, KeyHubRecord> keyhubRecords = new ConcurrentHashMap<>();
 
     @Override
     public <C extends Credentials> List<C> getCredentials(Class<C> type, ItemGroup itemGroup,
@@ -48,8 +44,8 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
             while (itemGroup != null) {
                 if (itemGroup instanceof Folder) {
                     final AbstractFolder<?> folder = AbstractFolder.class.cast(itemGroup);
-                    FolderKeyHubVaultConfiguration property = folder.getProperties()
-                            .get(FolderKeyHubVaultConfiguration.class);
+                    FolderKeyHubClientConfiguration property = folder.getProperties()
+                            .get(FolderKeyHubClientConfiguration.class);
                     ClientCredentials folderClientCredentials = property.getConfiguration().getClientCredentials();
                     if (folderClientCredentials.getClientId().isEmpty()) {
                         return Collections.emptyList();
@@ -105,14 +101,6 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
             e.printStackTrace();
         }
         return Collections.emptyList();
-    }
-
-    public ClientCredentials getClientCredentials() {
-        return clientCredentials;
-    }
-
-    public void setClientCredentials(ClientCredentials credentials) {
-        this.clientCredentials = credentials;
     }
 
     @Override

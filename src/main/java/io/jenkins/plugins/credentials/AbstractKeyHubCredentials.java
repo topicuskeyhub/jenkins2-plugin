@@ -3,7 +3,6 @@ package io.jenkins.plugins.credentials;
 import com.cloudbees.plugins.credentials.impl.BaseStandardCredentials;
 
 import hudson.util.Secret;
-import io.jenkins.plugins.vault.IVaultAccessor;
 
 public abstract class AbstractKeyHubCredentials extends BaseStandardCredentials {
 
@@ -13,7 +12,6 @@ public abstract class AbstractKeyHubCredentials extends BaseStandardCredentials 
 
     public AbstractKeyHubCredentials(String id, String description) {
         super(id, description);
-        // TODO Auto-generated constructor stub
     }
 
     public String getRecordName() {
