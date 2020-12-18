@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.cloudbees.hudson.plugins.folder.AbstractFolder;
 import com.cloudbees.hudson.plugins.folder.Folder;
@@ -17,7 +18,6 @@ import com.cloudbees.plugins.credentials.common.IdCredentials;
 
 import org.acegisecurity.Authentication;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
 import hudson.model.Item;
@@ -35,42 +35,12 @@ import io.jenkins.plugins.vault.VaultAccessor;
 @Extension
 public class KeyHubCredentialsProvider extends CredentialsProvider {
 
-    private Collection<KeyHubUsernamePasswordCredentials> fetchCredentials(ClientCredentials clientCredentials) {
-        GlobalPluginConfiguration keyhubGlobalConfig = GlobalPluginConfiguration.all()
-                .get(GlobalPluginConfiguration.class);
-        if (keyhubGlobalConfig.getKeyhubURI().isEmpty()) {
-            return Collections.emptyList();
-        }
+    private ClientCredentials clientCredentials;
+    private ConcurrentHashMap<String, KeyHubRecord> keyhubRecords = new ConcurrentHashMap<>();
 
-        VaultAccessor va = new VaultAccessor(clientCredentials, keyhubGlobalConfig.getKeyhubURI());
-        List<KeyHubGroup> khGroups = new ArrayList<>();
-        List<KeyHubRecord> khRecords = new ArrayList<>();
-
-        List<KeyHubUsernamePasswordCredentials> jRecords = new ArrayList<>();
-        try {
-            va.connect();
-            khGroups = va.fetchGroupData();
-            khRecords = va.fetchRecordsFromVault(khGroups);
-            for (KeyHubGroup group : khGroups) {
-                for (int i = 0; i < khRecords.size(); i++) {
-                    jRecords.add(KeyHubUsernamePasswordCredentials.KeyHubCredentialsBuilder.newInstance()
-                            .id(khRecords.get(i).getUUID()).recordName(khRecords.get(i).getName()).va(va)
-                            .href(khRecords.get(i).getHref()).username(khRecords.get(i).getUsername()).build());
-                }
-            }
-            return jRecords;
-
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
-        return Collections.emptyList();
-    }
-
-    @NonNull
     @Override
     public <C extends Credentials> List<C> getCredentials(Class<C> type, ItemGroup itemGroup,
             @Nullable Authentication authentication) {
-
         List<C> result = new ArrayList<C>();
         Set<String> ids = new HashSet<String>();
 
@@ -103,6 +73,46 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
             }
         }
         return result;
+    }
+
+    private Collection<KeyHubUsernamePasswordCredentials> fetchCredentials(ClientCredentials clientCredentials) {
+        GlobalPluginConfiguration keyhubGlobalConfig = GlobalPluginConfiguration.all()
+                .get(GlobalPluginConfiguration.class);
+        if (keyhubGlobalConfig.getKeyhubURI().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        VaultAccessor va = new VaultAccessor(clientCredentials, keyhubGlobalConfig.getKeyhubURI());
+        List<KeyHubGroup> khGroups = new ArrayList<>();
+        List<KeyHubRecord> khRecords = new ArrayList<>();
+
+        List<KeyHubUsernamePasswordCredentials> jRecords = new ArrayList<>();
+        try {
+            va.connect();
+            khGroups = va.fetchGroupData();
+            khRecords = va.fetchRecordsFromVault(khGroups);
+            for (KeyHubGroup group : khGroups) {
+                for (int i = 0; i < khRecords.size(); i++) {
+                    jRecords.add(KeyHubUsernamePasswordCredentials.KeyHubCredentialsBuilder.newInstance()
+                            .id(khRecords.get(i).getUUID()).recordName(khRecords.get(i).getName())
+                            .href(khRecords.get(i).getHref()).username(khRecords.get(i).getUsername())
+                            .password(new SecretSupplier(va, khRecords.get(i).getHref())).build());
+                }
+            }
+            return jRecords;
+
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+        return Collections.emptyList();
+    }
+
+    public ClientCredentials getClientCredentials() {
+        return clientCredentials;
+    }
+
+    public void setClientCredentials(ClientCredentials credentials) {
+        this.clientCredentials = credentials;
     }
 
     @Override

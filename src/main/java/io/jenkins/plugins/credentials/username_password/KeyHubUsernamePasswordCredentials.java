@@ -1,6 +1,6 @@
 package io.jenkins.plugins.credentials.username_password;
 
-import java.io.IOException;
+import java.util.function.Supplier;
 
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
 
@@ -8,26 +8,23 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.util.Secret;
 import io.jenkins.plugins.credentials.AbstractKeyHubCredentials;
-import io.jenkins.plugins.vault.IVaultAccessor;
 
 public class KeyHubUsernamePasswordCredentials extends AbstractKeyHubCredentials
         implements StandardUsernamePasswordCredentials {
 
+    private Supplier<Secret> password;
+
     public KeyHubUsernamePasswordCredentials(KeyHubCredentialsBuilder builder) {
-        super(builder.id, builder.recordName, builder.va);
-        this.va = builder.va;
+        super(builder.id, builder.recordName);
         this.href = builder.href;
         this.username = builder.username;
+        this.password = builder.password;
     }
 
+    @NonNull
     @Override
     public Secret getPassword() {
-        try {
-            return va.fetchRecordSecret(this.href);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
+        return password.get();
     }
 
     @Extension
@@ -49,9 +46,9 @@ public class KeyHubUsernamePasswordCredentials extends AbstractKeyHubCredentials
 
         private String id;
         private String recordName;
-        private IVaultAccessor va;
         private String href;
         private String username;
+        private Supplier<Secret> password;
 
         public static KeyHubCredentialsBuilder newInstance() {
             return new KeyHubCredentialsBuilder();
@@ -62,11 +59,6 @@ public class KeyHubUsernamePasswordCredentials extends AbstractKeyHubCredentials
 
         public KeyHubCredentialsBuilder id(String id) {
             this.id = id;
-            return this;
-        }
-
-        public KeyHubCredentialsBuilder va(IVaultAccessor va) {
-            this.va = va;
             return this;
         }
 
@@ -82,6 +74,11 @@ public class KeyHubUsernamePasswordCredentials extends AbstractKeyHubCredentials
 
         public KeyHubCredentialsBuilder username(String username) {
             this.username = username;
+            return this;
+        }
+
+        public KeyHubCredentialsBuilder password(Supplier<Secret> password) {
+            this.password = password;
             return this;
         }
 
