@@ -41,8 +41,8 @@ public class ClientConfiguration extends AbstractDescribableImpl<ClientConfigura
     }
 
     @DataBoundSetter
-    public void setClientSecret(String vaultSecret) {
-        this.clientSecret = vaultSecret;
+    public void setClientSecret(String clientSecret) {
+        this.clientSecret = clientSecret;
     }
 
     public ClientCredentials getClientCredentials() {

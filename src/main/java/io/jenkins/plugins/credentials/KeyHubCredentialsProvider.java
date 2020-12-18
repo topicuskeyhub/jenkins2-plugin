@@ -41,6 +41,7 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
         Set<String> ids = new HashSet<String>();
 
         if (ACL.SYSTEM.equals(authentication)) {
+            System.out.println("ItemGroup: " + itemGroup.getAllItems().toString());
             while (itemGroup != null) {
                 if (itemGroup instanceof Folder) {
                     final AbstractFolder<?> folder = AbstractFolder.class.cast(itemGroup);
