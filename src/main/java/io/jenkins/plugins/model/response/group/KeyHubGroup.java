@@ -10,7 +10,6 @@ public class KeyHubGroup {
     private List<Link> links;
     private AdditionalObjectsOfGroup additionalObjects;
     private String name;
-    // private Map<String, Link> groups;
 
     @JsonProperty("links")
     public List<Link> getLinks() {

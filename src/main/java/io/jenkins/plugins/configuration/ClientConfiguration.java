@@ -21,7 +21,6 @@ public class ClientConfiguration extends AbstractDescribableImpl<ClientConfigura
     @DataBoundConstructor
     public ClientConfiguration() {
         this.keyhubURI = GlobalPluginConfiguration.getInstance().getKeyhubURI();
-        // no args constructor
     }
 
     public String getKeyhubURI() {
