@@ -33,20 +33,4 @@ public class FolderKeyHubVaultConfiguration extends AbstractFolderProperty<Abstr
 
     }
 
-    @Extension
-    public static class ForJenkinsJob {
-
-        @NonNull
-        public VaultConfiguration forJenkinsJob(@NonNull Item job) {
-            VaultConfiguration vConfig = null;
-            for (ItemGroup g = job.getParent(); g instanceof AbstractFolder; g = ((AbstractFolder) g).getParent()) {
-                FolderKeyHubVaultConfiguration folderProperty = ((AbstractFolder<?>) g).getProperties()
-                        .get(FolderKeyHubVaultConfiguration.class);
-
-                vConfig = folderProperty.getConfiguration();
-            }
-            return vConfig;
-        }
-    }
-
 }
