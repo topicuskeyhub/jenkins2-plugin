@@ -10,7 +10,7 @@ public abstract class AbstractKeyHubCredentials extends BaseStandardCredentials 
     protected String href;
     protected String username;
 
-    public AbstractKeyHubCredentials(String id, String description) {
+    protected AbstractKeyHubCredentials(String id, String description) {
         super(id, description);
     }
 

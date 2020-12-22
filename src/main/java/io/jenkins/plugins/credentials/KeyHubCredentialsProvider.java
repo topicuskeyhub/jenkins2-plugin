@@ -7,6 +7,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.cloudbees.hudson.plugins.folder.AbstractFolder;
 import com.cloudbees.hudson.plugins.folder.Folder;
@@ -34,14 +36,15 @@ import io.jenkins.plugins.vault.VaultAccessor;
 @Extension
 public class KeyHubCredentialsProvider extends CredentialsProvider {
 
+    private static final Logger LOG = Logger.getLogger(KeyHubCredentialsProvider.class.getName());
+
     @Override
     public <C extends Credentials> List<C> getCredentials(Class<C> type, ItemGroup itemGroup,
             @Nullable Authentication authentication) {
-        List<C> result = new ArrayList<C>();
-        Set<String> ids = new HashSet<String>();
+        List<C> result = new ArrayList<>();
+        Set<String> ids = new HashSet<>();
 
         if (ACL.SYSTEM.equals(authentication)) {
-            System.out.println("ItemGroup: " + itemGroup.getAllItems().toString());
             while (itemGroup != null) {
                 if (itemGroup instanceof Folder) {
                     final AbstractFolder<?> folder = AbstractFolder.class.cast(itemGroup);
@@ -73,8 +76,7 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
     }
 
     private Collection<KeyHubUsernamePasswordCredentials> fetchCredentials(ClientCredentials clientCredentials) {
-        GlobalPluginConfiguration keyhubGlobalConfig = GlobalPluginConfiguration.all()
-                .get(GlobalPluginConfiguration.class);
+        GlobalPluginConfiguration keyhubGlobalConfig = GlobalPluginConfiguration.getInstance();
         if (keyhubGlobalConfig.getKeyhubURI().isEmpty()) {
             return Collections.emptyList();
         }
@@ -98,8 +100,13 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
             }
             return jRecords;
 
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            LOG.log(Level.WARNING, "IO could not fetch credentials out of the KeyHub vault: message=[{0}]",
+                    e.getMessage());
+        } catch (InterruptedException e) {
+            LOG.log(Level.WARNING, "Thread could not fetch credentials out of the KeyHub vault: message=[{0}]",
+                    e.getMessage());
+            Thread.currentThread().interrupt();
         }
         return Collections.emptyList();
     }

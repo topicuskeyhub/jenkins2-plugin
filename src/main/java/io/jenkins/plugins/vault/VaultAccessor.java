@@ -31,6 +31,7 @@ public class VaultAccessor implements IVaultAccessor {
     private String keyhubGlobalConfiguration;
     private RestClientBuilder restClientBuilder = new RestClientBuilder();
     private KeyHubTokenResponse keyhubToken;
+    private static final String RESPONSE_ACCEPT = "application/vnd.topicus.keyhub+json;version=44";
 
     public VaultAccessor() {
     }
@@ -89,7 +90,7 @@ public class VaultAccessor implements IVaultAccessor {
         ResteasyWebTarget target = restClientBuilder.getClient().target(AUTH_ENDPOINT);
         target.register(new BasicAuthentication(clientCredentials.getClientId(),
                 Secret.toString(clientCredentials.getClientSecret())));
-        target.request().header("Accept", "application/vnd.topicus.keyhub+json;version=44");
+        target.request().header("Accept", RESPONSE_ACCEPT);
         this.keyhubToken = target.request().post(Entity.form(connectionRequest), KeyHubTokenResponse.class);
     }
 
@@ -99,8 +100,7 @@ public class VaultAccessor implements IVaultAccessor {
         ListOfKeyHubGroups keyhubGroups;
 
         try (Response response = target.request().header("Authorization", "Bearer " + keyhubToken.getToken())
-                .header("Content-Type", "application/json")
-                .header("Accept", "application/vnd.topicus.keyhub+json;version=44").get()) {
+                .header("Content-Type", "application/json").header("Accept", RESPONSE_ACCEPT).get()) {
             String json = response.readEntity(String.class);
             keyhubGroups = restClientBuilder.getMapper().readValue(json, ListOfKeyHubGroups.class);
         }
@@ -108,14 +108,13 @@ public class VaultAccessor implements IVaultAccessor {
     }
 
     public List<KeyHubRecord> fetchRecordsFromVault(List<KeyHubGroup> groups) throws IOException {
-        String ENDPOINT;
+        String endpoint;
         ListOfKeyHubRecords keyhubRecords = new ListOfKeyHubRecords();
         for (KeyHubGroup group : groups) {
-            ENDPOINT = group.getHref() + "/vault/record";
-            ResteasyWebTarget target = restClientBuilder.getClient().target(ENDPOINT);
+            endpoint = group.getHref() + "/vault/record";
+            ResteasyWebTarget target = restClientBuilder.getClient().target(endpoint);
             try (Response response = target.request().header("Authorization", "Bearer " + keyhubToken.getToken())
-                    .header("Content-Type", "application/json")
-                    .header("Accept", "application/vnd.topicus.keyhub+json;version=44").get()) {
+                    .header("Content-Type", "application/json").header("Accept", RESPONSE_ACCEPT).get()) {
                 String json = response.readEntity(String.class);
                 keyhubRecords = restClientBuilder.getMapper().readValue(json, ListOfKeyHubRecords.class);
             }
@@ -128,13 +127,11 @@ public class VaultAccessor implements IVaultAccessor {
         final String ENDPOINT = href + param;
         ResteasyWebTarget target = restClientBuilder.getClient().target(ENDPOINT);
         try (Response response = target.request().header("Authorization", "Bearer " + keyhubToken.getToken())
-                .header("Content-Type", "application/json")
-                .header("Accept", "application/vnd.topicus.keyhub+json;version=44")
+                .header("Content-Type", "application/json").header("Accept", RESPONSE_ACCEPT)
                 .header("topicus-Vault-session", keyhubToken.getVaultSession()).get()) {
             String json = response.readEntity(String.class);
-            Secret recordSecret = Secret.fromString(JsonPath.parse(json).read("$.additionalObjects..secret..password")
-                    .toString().replace("[", "").replace("\"", "").replace("]", ""));
-            return recordSecret;
+            return Secret.fromString(JsonPath.parse(json).read("$.additionalObjects..secret..password").toString()
+                    .replace("[", "").replace("\"", "").replace("]", ""));
         }
     }
 }
