@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -21,7 +22,6 @@ import org.acegisecurity.Authentication;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
-import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.ModelObject;
 import hudson.security.ACL;
@@ -41,38 +41,33 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
     @Override
     public <C extends Credentials> List<C> getCredentials(Class<C> type, ItemGroup itemGroup,
             @Nullable Authentication authentication) {
-        List<C> result = new ArrayList<>();
-        Set<String> ids = new HashSet<>();
 
         if (ACL.SYSTEM.equals(authentication)) {
-            while (itemGroup != null) {
-                if (itemGroup instanceof Folder) {
-                    final AbstractFolder<?> folder = AbstractFolder.class.cast(itemGroup);
-                    FolderKeyHubClientConfiguration property = folder.getProperties()
-                            .get(FolderKeyHubClientConfiguration.class);
-                    ClientCredentials folderClientCredentials = property.getConfiguration().getClientCredentials();
-                    if (folderClientCredentials.getClientId().isEmpty()) {
-                        return Collections.emptyList();
-                    }
-                    Collection<KeyHubUsernamePasswordCredentials> khUsernamePasswordCredentials = fetchCredentials(
-                            folderClientCredentials);
-                    if (khUsernamePasswordCredentials.isEmpty()) {
-                        return Collections.emptyList();
-                    }
-                    for (Credentials credentials : khUsernamePasswordCredentials) {
-                        if (!(credentials instanceof IdCredentials) || ids.add(((IdCredentials) credentials).getId())) {
-                            result.add(type.cast(credentials));
-                        }
-                    }
+            List<C> result = new ArrayList<>();
+            Set<String> ids = new HashSet<>();
+            if (itemGroup instanceof Folder) {
+                final AbstractFolder<?> folder = AbstractFolder.class.cast(itemGroup);
+                FolderKeyHubClientConfiguration property = Optional
+                        .ofNullable(folder.getProperties().get(FolderKeyHubClientConfiguration.class))
+                        .orElse(new FolderKeyHubClientConfiguration());
+                if (property.getConfiguration() == null) {
+                    return Collections.emptyList();
                 }
-                if (itemGroup instanceof Item) {
-                    itemGroup = Item.class.cast(itemGroup).getParent();
-                } else {
-                    break;
+                ClientCredentials folderClientCredentials = property.getConfiguration().getClientCredentials();
+                if (folderClientCredentials.getClientId().isEmpty()) {
+                    return Collections.emptyList();
+                }
+                Collection<KeyHubUsernamePasswordCredentials> khUsernamePasswordCredentials = fetchCredentials(
+                        folderClientCredentials);
+                for (Credentials credentials : khUsernamePasswordCredentials) {
+                    if (!(credentials instanceof IdCredentials) || ids.add(((IdCredentials) credentials).getId())) {
+                        result.add(type.cast(credentials));
+                    }
                 }
             }
+            return result;
         }
-        return result;
+        return Collections.emptyList();
     }
 
     private Collection<KeyHubUsernamePasswordCredentials> fetchCredentials(ClientCredentials clientCredentials) {
@@ -90,7 +85,8 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
             va.connect();
             khGroups = va.fetchGroupData();
             khRecords = va.fetchRecordsFromVault(khGroups);
-            for (KeyHubGroup group : khGroups) {
+            // for (KeyHubGroup group : khGroups) {
+            for (int j = 0; j < khGroups.size(); j++) {
                 for (int i = 0; i < khRecords.size(); i++) {
                     jRecords.add(KeyHubUsernamePasswordCredentials.KeyHubCredentialsBuilder.newInstance()
                             .id(khRecords.get(i).getUUID()).recordName(khRecords.get(i).getName())
@@ -103,10 +99,6 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
         } catch (IOException e) {
             LOG.log(Level.WARNING, "IO could not fetch credentials out of the KeyHub vault: message=[{0}]",
                     e.getMessage());
-        } catch (InterruptedException e) {
-            LOG.log(Level.WARNING, "Thread could not fetch credentials out of the KeyHub vault: message=[{0}]",
-                    e.getMessage());
-            Thread.currentThread().interrupt();
         }
         return Collections.emptyList();
     }

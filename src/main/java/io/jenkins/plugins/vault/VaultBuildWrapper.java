@@ -27,7 +27,7 @@ public class VaultBuildWrapper extends SimpleBuildWrapper {
 
     ClientCredentials clientCredentials;
     ClientConfiguration configuration;
-    private transient VaultAccessor vaultAccessor = new VaultAccessor();
+    private  VaultAccessor vaultAccessor = new VaultAccessor();
     private String vaultUrl;
 
     @DataBoundConstructor

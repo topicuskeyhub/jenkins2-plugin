@@ -61,7 +61,7 @@ public class VaultAccessor implements IVaultAccessor {
         return this.clientCredentials;
     }
 
-    public VaultAccessor connect() throws IOException, InterruptedException {
+    public VaultAccessor connect() {
         if (keyhubToken == null) {
             fetchAuthenticationTokenAndGetVaultAccess();
         }
@@ -80,7 +80,7 @@ public class VaultAccessor implements IVaultAccessor {
      * @throws ClientProtocolException
      * @throws IOException
      */
-    private void fetchAuthenticationTokenAndGetVaultAccess() throws IOException, InterruptedException {
+    private void fetchAuthenticationTokenAndGetVaultAccess() {
         if (clientCredentials.getClientSecret() == null) {
             throw new IllegalStateException("Cannot refresh access token, no secret stored/given.");
         }
