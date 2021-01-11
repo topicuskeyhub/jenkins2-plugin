@@ -6,8 +6,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.cloudbees.hudson.plugins.folder.AbstractFolder;
 import com.cloudbees.hudson.plugins.folder.Folder;
@@ -20,11 +22,10 @@ import org.acegisecurity.Authentication;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
-import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.ModelObject;
 import hudson.security.ACL;
-import io.jenkins.plugins.configuration.FolderKeyHubVaultConfiguration;
+import io.jenkins.plugins.configuration.FolderKeyHubClientConfiguration;
 import io.jenkins.plugins.configuration.GlobalPluginConfiguration;
 import io.jenkins.plugins.credentials.username_password.KeyHubUsernamePasswordCredentials;
 import io.jenkins.plugins.model.ClientCredentials;
@@ -35,49 +36,42 @@ import io.jenkins.plugins.vault.VaultAccessor;
 @Extension
 public class KeyHubCredentialsProvider extends CredentialsProvider {
 
-    private ClientCredentials clientCredentials;
-    private ConcurrentHashMap<String, KeyHubRecord> keyhubRecords = new ConcurrentHashMap<>();
+    private static final Logger LOG = Logger.getLogger(KeyHubCredentialsProvider.class.getName());
 
     @Override
     public <C extends Credentials> List<C> getCredentials(Class<C> type, ItemGroup itemGroup,
             @Nullable Authentication authentication) {
-        List<C> result = new ArrayList<C>();
-        Set<String> ids = new HashSet<String>();
 
         if (ACL.SYSTEM.equals(authentication)) {
-            while (itemGroup != null) {
-                if (itemGroup instanceof Folder) {
-                    final AbstractFolder<?> folder = AbstractFolder.class.cast(itemGroup);
-                    FolderKeyHubVaultConfiguration property = folder.getProperties()
-                            .get(FolderKeyHubVaultConfiguration.class);
-                    ClientCredentials folderClientCredentials = property.getConfiguration().getClientCredentials();
-                    if (folderClientCredentials.getClientId().isEmpty()) {
-                        return Collections.emptyList();
-                    }
-                    Collection<KeyHubUsernamePasswordCredentials> khUsernamePasswordCredentials = fetchCredentials(
-                            folderClientCredentials);
-                    if (khUsernamePasswordCredentials.isEmpty()) {
-                        return Collections.emptyList();
-                    }
-                    for (Credentials credentials : khUsernamePasswordCredentials) {
-                        if (!(credentials instanceof IdCredentials) || ids.add(((IdCredentials) credentials).getId())) {
-                            result.add(type.cast(credentials));
-                        }
-                    }
+            List<C> result = new ArrayList<>();
+            Set<String> ids = new HashSet<>();
+            if (itemGroup instanceof Folder) {
+                final AbstractFolder<?> folder = AbstractFolder.class.cast(itemGroup);
+                FolderKeyHubClientConfiguration property = Optional
+                        .ofNullable(folder.getProperties().get(FolderKeyHubClientConfiguration.class))
+                        .orElse(new FolderKeyHubClientConfiguration());
+                if (property.getConfiguration() == null) {
+                    return Collections.emptyList();
                 }
-                if (itemGroup instanceof Item) {
-                    itemGroup = Item.class.cast(itemGroup).getParent();
-                } else {
-                    break;
+                ClientCredentials folderClientCredentials = property.getConfiguration().getClientCredentials();
+                if (folderClientCredentials.getClientId().isEmpty()) {
+                    return Collections.emptyList();
+                }
+                Collection<KeyHubUsernamePasswordCredentials> khUsernamePasswordCredentials = fetchCredentials(
+                        folderClientCredentials);
+                for (Credentials credentials : khUsernamePasswordCredentials) {
+                    if (!(credentials instanceof IdCredentials) || ids.add(((IdCredentials) credentials).getId())) {
+                        result.add(type.cast(credentials));
+                    }
                 }
             }
+            return result;
         }
-        return result;
+        return Collections.emptyList();
     }
 
     private Collection<KeyHubUsernamePasswordCredentials> fetchCredentials(ClientCredentials clientCredentials) {
-        GlobalPluginConfiguration keyhubGlobalConfig = GlobalPluginConfiguration.all()
-                .get(GlobalPluginConfiguration.class);
+        GlobalPluginConfiguration keyhubGlobalConfig = GlobalPluginConfiguration.getInstance();
         if (keyhubGlobalConfig.getKeyhubURI().isEmpty()) {
             return Collections.emptyList();
         }
@@ -91,7 +85,8 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
             va.connect();
             khGroups = va.fetchGroupData();
             khRecords = va.fetchRecordsFromVault(khGroups);
-            for (KeyHubGroup group : khGroups) {
+            // for (KeyHubGroup group : khGroups) {
+            for (int j = 0; j < khGroups.size(); j++) {
                 for (int i = 0; i < khRecords.size(); i++) {
                     jRecords.add(KeyHubUsernamePasswordCredentials.KeyHubCredentialsBuilder.newInstance()
                             .id(khRecords.get(i).getUUID()).recordName(khRecords.get(i).getName())
@@ -101,18 +96,11 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
             }
             return jRecords;
 
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            LOG.log(Level.WARNING, "IO could not fetch credentials out of the KeyHub vault: message=[{0}]",
+                    e.getMessage());
         }
         return Collections.emptyList();
-    }
-
-    public ClientCredentials getClientCredentials() {
-        return clientCredentials;
-    }
-
-    public void setClientCredentials(ClientCredentials credentials) {
-        this.clientCredentials = credentials;
     }
 
     @Override

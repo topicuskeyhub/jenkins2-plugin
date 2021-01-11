@@ -118,7 +118,7 @@ public class KeyHubCredentialsStore extends CredentialsStore {
 
         @Override
         public String getIconClassName() {
-            return isVisible() ? "icon-keyhub-credentials-vault" : null;
+            return isVisible() ? ICON_CLASS : null;
         }
 
         @Override
