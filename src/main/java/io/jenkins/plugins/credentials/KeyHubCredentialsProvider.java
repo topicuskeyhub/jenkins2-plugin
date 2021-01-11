@@ -85,7 +85,6 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
             va.connect();
             khGroups = va.fetchGroupData();
             khRecords = va.fetchRecordsFromVault(khGroups);
-            // for (KeyHubGroup group : khGroups) {
             for (int j = 0; j < khGroups.size(); j++) {
                 for (int i = 0; i < khRecords.size(); i++) {
                     jRecords.add(KeyHubUsernamePasswordCredentials.KeyHubCredentialsBuilder.newInstance()
