@@ -2,10 +2,12 @@ package io.jenkins.plugins.model.response.group;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.jenkins.plugins.model.response.Link;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class KeyHubGroup {
     private List<Link> links;
     private AdditionalObjectsOfGroup additionalObjects;

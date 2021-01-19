@@ -6,6 +6,7 @@ import hudson.util.Secret;
 
 public abstract class AbstractKeyHubCredentials extends BaseStandardCredentials {
 
+    private static final long serialVersionUID = 1L;
     protected String recordName;
     protected String href;
     protected String username;

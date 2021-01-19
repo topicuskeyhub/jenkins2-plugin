@@ -2,7 +2,7 @@ package io.jenkins.plugins.model.response.record;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class AdditionalObjectsOfRecordsSecret {
+public class AdditionalObjectsOfVaultRecord {
     private RecordSecret secret;
 
     @JsonProperty("secret")

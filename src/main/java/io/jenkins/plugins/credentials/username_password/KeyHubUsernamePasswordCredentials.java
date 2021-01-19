@@ -12,6 +12,7 @@ import io.jenkins.plugins.credentials.AbstractKeyHubCredentials;
 public class KeyHubUsernamePasswordCredentials extends AbstractKeyHubCredentials
         implements StandardUsernamePasswordCredentials {
 
+    private static final long serialVersionUID = 1L;
     private Supplier<Secret> password;
 
     public KeyHubUsernamePasswordCredentials(KeyHubCredentialsBuilder builder) {

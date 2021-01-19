@@ -11,11 +11,11 @@ public class ClientCredentials {
     @DataBoundConstructor
     public ClientCredentials(String clientId, Secret clientSecret) {
         this.clientId = clientId;
-        this.setClientSecret(clientSecret);
+        this.clientSecret = clientSecret;
     }
 
     public ClientCredentials() {
-        
+
     }
 
     public String getClientId() {

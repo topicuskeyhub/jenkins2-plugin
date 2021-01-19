@@ -14,6 +14,7 @@ import io.jenkins.plugins.model.ClientCredentials;
 
 public class ClientConfiguration extends AbstractDescribableImpl<ClientConfiguration> implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     private String keyhubURI;
     private String clientId;
     private String clientSecret;

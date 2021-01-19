@@ -28,19 +28,14 @@ public class KeyHubCredentialsStore extends CredentialsStore {
 
     private final KeyHubCredentialsProvider provider;
     private final KeyHubCredentialsStoreAction action = new KeyHubCredentialsStoreAction(this);
-    private ItemGroup itemGroup;
+    private ItemGroup<?> itemGroup;
 
-    public KeyHubCredentialsStore(KeyHubCredentialsProvider provider, ItemGroup itemGroup) {
+    public KeyHubCredentialsStore(KeyHubCredentialsProvider provider, ItemGroup<?> itemGroup) {
         super(KeyHubCredentialsProvider.class);
         this.provider = provider;
         this.itemGroup = itemGroup;
     }
-
-    public KeyHubCredentialsStore() {
-        super(KeyHubCredentialsProvider.class);
-        this.provider = new KeyHubCredentialsProvider();
-    }
-
+    
     @NonNull
     @Override
     public ModelObject getContext() {

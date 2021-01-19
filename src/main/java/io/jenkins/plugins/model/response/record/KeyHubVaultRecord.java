@@ -1,14 +1,17 @@
 package io.jenkins.plugins.model.response.record;
 
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.jenkins.plugins.model.response.Link;
 
-public class KeyHubRecord {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class KeyHubVaultRecord {
     private String type;
     private List<Link> links;
-    private AdditionalObjectsOfRecordsSecret additionalObjects;
+    private AdditionalObjectsOfVaultRecord additionalObjects;
     private String uuid;
     private String name;
     private String username;
@@ -34,12 +37,12 @@ public class KeyHubRecord {
     }
 
     @JsonProperty("additionalObjects")
-    public AdditionalObjectsOfRecordsSecret getAdditionalObjects() {
+    public AdditionalObjectsOfVaultRecord getAdditionalObjects() {
         return additionalObjects;
     }
 
     @JsonProperty("additionalObjects")
-    public void setAdditionalObjects(AdditionalObjectsOfRecordsSecret value) {
+    public void setAdditionalObjects(AdditionalObjectsOfVaultRecord value) {
         this.additionalObjects = value;
     }
 

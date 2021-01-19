@@ -4,10 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,7 +14,6 @@ import com.cloudbees.hudson.plugins.folder.Folder;
 import com.cloudbees.plugins.credentials.Credentials;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.CredentialsStore;
-import com.cloudbees.plugins.credentials.common.IdCredentials;
 
 import org.acegisecurity.Authentication;
 
@@ -30,21 +27,23 @@ import io.jenkins.plugins.configuration.GlobalPluginConfiguration;
 import io.jenkins.plugins.credentials.username_password.KeyHubUsernamePasswordCredentials;
 import io.jenkins.plugins.model.ClientCredentials;
 import io.jenkins.plugins.model.response.group.KeyHubGroup;
-import io.jenkins.plugins.model.response.record.KeyHubRecord;
+import io.jenkins.plugins.model.response.record.KeyHubVaultRecord;
+import io.jenkins.plugins.vault.RestClientBuilder;
 import io.jenkins.plugins.vault.VaultAccessor;
 
 @Extension
 public class KeyHubCredentialsProvider extends CredentialsProvider {
 
     private static final Logger LOG = Logger.getLogger(KeyHubCredentialsProvider.class.getName());
+    private RestClientBuilder restClientBuilder = new RestClientBuilder();
 
+    @SuppressWarnings("rawtypes")
     @Override
     public <C extends Credentials> List<C> getCredentials(Class<C> type, ItemGroup itemGroup,
             @Nullable Authentication authentication) {
 
         if (ACL.SYSTEM.equals(authentication)) {
             List<C> result = new ArrayList<>();
-            Set<String> ids = new HashSet<>();
             if (itemGroup instanceof Folder) {
                 final AbstractFolder<?> folder = AbstractFolder.class.cast(itemGroup);
                 FolderKeyHubClientConfiguration property = Optional
@@ -59,10 +58,8 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
                 }
                 Collection<KeyHubUsernamePasswordCredentials> khUsernamePasswordCredentials = fetchCredentials(
                         folderClientCredentials);
-                for (Credentials credentials : khUsernamePasswordCredentials) {
-                    if (!(credentials instanceof IdCredentials) || ids.add(((IdCredentials) credentials).getId())) {
-                        result.add(type.cast(credentials));
-                    }
+                for (KeyHubUsernamePasswordCredentials credentials : khUsernamePasswordCredentials) {
+                    result.add(type.cast(credentials));
                 }
             }
             return result;
@@ -76,9 +73,9 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
             return Collections.emptyList();
         }
 
-        VaultAccessor va = new VaultAccessor(clientCredentials, keyhubGlobalConfig.getKeyhubURI());
+        VaultAccessor va = new VaultAccessor(clientCredentials, keyhubGlobalConfig.getKeyhubURI(), restClientBuilder);
         List<KeyHubGroup> khGroups = new ArrayList<>();
-        List<KeyHubRecord> khRecords = new ArrayList<>();
+        List<KeyHubVaultRecord> khRecords = new ArrayList<>();
 
         List<KeyHubUsernamePasswordCredentials> jRecords = new ArrayList<>();
         try {
@@ -112,7 +109,7 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
         if (!(object instanceof ItemGroup)) {
             return null;
         }
-        ItemGroup owner = (ItemGroup) object;
+        ItemGroup<?> owner = (ItemGroup<?>) object;
 
         return new KeyHubCredentialsStore(this, owner);
 
