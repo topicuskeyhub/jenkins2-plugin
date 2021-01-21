@@ -19,6 +19,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import hudson.ExtensionList;
 import hudson.model.ItemGroup;
 import hudson.security.ACL;
+import nl.topicus.keyhub.jenkins.credentials.KeyHubCredentialsProvider;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ ExtensionList.class })
