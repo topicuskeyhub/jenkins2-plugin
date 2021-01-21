@@ -19,12 +19,13 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import hudson.ExtensionList;
 import hudson.model.ItemGroup;
 import hudson.security.ACL;
+import nl.topicus.keyhub.jenkins.credentials.KeyHubCredentialsProvider;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ ExtensionList.class })
 public class KeyHubCredentialsProviderTest {
 
-    private ItemGroup itemGroup;
+    private ItemGroup<?> itemGroup;
 
     @Rule
     public JenkinsRule r = new JenkinsRule();
@@ -40,7 +41,7 @@ public class KeyHubCredentialsProviderTest {
         KeyHubCredentialsProvider provider = new KeyHubCredentialsProvider();
 
         List<UsernamePasswordCredentials> credentials = provider.getCredentials(UsernamePasswordCredentials.class,
-                (ItemGroup) null, ACL.SYSTEM);
+                (ItemGroup<?>) null, ACL.SYSTEM);
         assertEquals(Collections.emptyList(), credentials);
     }
 
@@ -49,7 +50,7 @@ public class KeyHubCredentialsProviderTest {
         KeyHubCredentialsProvider provider = new KeyHubCredentialsProvider();
 
         List<UsernamePasswordCredentials> credentials = provider.getCredentials(UsernamePasswordCredentials.class,
-                (ItemGroup) null, null);
+                (ItemGroup<?>) null, null);
         assertEquals(Collections.emptyList(), credentials);
     }
 
