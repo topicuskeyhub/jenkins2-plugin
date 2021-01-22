@@ -1,5 +1,6 @@
 target
 .factorypath
+.vscode
 
 # mvn hpi:run
 work
