@@ -22,6 +22,8 @@ import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 import hudson.util.Secret;
+import nl.topicus.keyhub.jenkins.model.response.record.AdditionalObjectsOfVaultRecord;
+import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
 import nl.topicus.keyhub.jenkins.model.response.record.RecordSecret;
 import nl.topicus.keyhub.jenkins.vault.IVaultAccessor;
 
@@ -37,8 +39,8 @@ public class SecretSupplier implements Supplier<Secret> {
 
     @Override
     public Secret get() {
-        RecordSecret secret = va.fetchRecordSecret(this.href);
-        return secret.getPassword();
+        KeyHubVaultRecord secret = va.fetchRecordSecret(this.href);
+        return secret.getAdditionalObjects().getSecret().getPassword();
     }
 
 }

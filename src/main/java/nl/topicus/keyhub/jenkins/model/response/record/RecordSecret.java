@@ -17,6 +17,7 @@
 
 package nl.topicus.keyhub.jenkins.model.response.record;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import hudson.util.Secret;
@@ -24,6 +25,7 @@ import hudson.util.Secret;
 public class RecordSecret {
     private String type;
     private Secret password;
+    private String writeTotp;
     private String file;
     private String comment;
 
@@ -45,6 +47,16 @@ public class RecordSecret {
     @JsonProperty("password")
     public void setPassword(Secret value) {
         this.password = value;
+    }
+
+    @JsonProperty("writeTotp")
+    public String getWriteTotp() {
+        return writeTotp;
+    }
+
+    @JsonProperty("writeTotp")
+    public void setWriteTotp(String value) {
+        this.writeTotp = value;
     }
 
     @JsonProperty("file")

@@ -38,6 +38,7 @@ import nl.topicus.keyhub.jenkins.model.ClientCredentials;
 import nl.topicus.keyhub.jenkins.model.response.KeyHubTokenResponse;
 import nl.topicus.keyhub.jenkins.model.response.group.KeyHubGroup;
 import nl.topicus.keyhub.jenkins.model.response.group.ListOfKeyHubGroups;
+import nl.topicus.keyhub.jenkins.model.response.record.AdditionalObjectsOfVaultRecord;
 import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
 import nl.topicus.keyhub.jenkins.model.response.record.ListOfKeyHubVaultRecords;
 import nl.topicus.keyhub.jenkins.model.response.record.RecordSecret;
@@ -54,8 +55,7 @@ public class VaultAccessor implements IVaultAccessor {
     public VaultAccessor() {
     }
 
-    public VaultAccessor(ClientCredentials credentials, String keyhubUri,
-            RestClientBuilder restClientBuilder) {
+    public VaultAccessor(ClientCredentials credentials, String keyhubUri, RestClientBuilder restClientBuilder) {
         this.clientCredentials = credentials;
         this.keyhubUri = keyhubUri;
         this.restClientBuilder = restClientBuilder;
@@ -93,8 +93,8 @@ public class VaultAccessor implements IVaultAccessor {
             throw new IllegalStateException("Cannot refresh access token, no secret stored/given.");
         }
 
-        UriBuilder authenticateUri = UriBuilder.fromUri(keyhubUri).path("/login/oauth2/token")
-                .queryParam("authVault", "access");
+        UriBuilder authenticateUri = UriBuilder.fromUri(keyhubUri).path("/login/oauth2/token").queryParam("authVault",
+                "access");
         Form connectionRequest = new Form().param("grant_type", "client_credentials");
         ResteasyWebTarget target = restClientBuilder.getClient().target(authenticateUri);
         target.register(new BasicAuthentication(clientCredentials.getClientId(),
@@ -110,8 +110,8 @@ public class VaultAccessor implements IVaultAccessor {
         ResteasyWebTarget target = restClientBuilder.getClient().target(groupDataUri);
         ListOfKeyHubGroups keyhubGroups;
         String authHeader = "Bearer " + keyhubToken.getToken();
-        try (Response response = target.request().header(HttpHeaders.AUTHORIZATION, authHeader)
-                .accept(RESPONSE_ACCEPT).get()) {
+        try (Response response = target.request().header(HttpHeaders.AUTHORIZATION, authHeader).accept(RESPONSE_ACCEPT)
+                .get()) {
             keyhubGroups = response.readEntity(ListOfKeyHubGroups.class);
         }
         return keyhubGroups.getGroups();
@@ -132,14 +132,14 @@ public class VaultAccessor implements IVaultAccessor {
         return keyhubRecords.getRecords();
     }
 
-    public RecordSecret fetchRecordSecret(String href) {
+    public KeyHubVaultRecord fetchRecordSecret(String href) {
         connect();
         UriBuilder recordSecretUri = UriBuilder.fromUri(href).queryParam("additional", "secret");
         ResteasyWebTarget target = restClientBuilder.getClient().target(recordSecretUri);
         String authHeader = "Bearer " + keyhubToken.getToken();
-        try (Response response = target.request().header(HttpHeaders.AUTHORIZATION, authHeader)
-                .accept(RESPONSE_ACCEPT).header("topicus-Vault-session", keyhubToken.getVaultSession()).get()) {
-            return response.readEntity(RecordSecret.class);
+        try (Response response = target.request().header(HttpHeaders.AUTHORIZATION, authHeader).accept(RESPONSE_ACCEPT)
+                .header("topicus-Vault-session", keyhubToken.getVaultSession()).get()) {
+            return response.readEntity(KeyHubVaultRecord.class);
         }
     }
 }

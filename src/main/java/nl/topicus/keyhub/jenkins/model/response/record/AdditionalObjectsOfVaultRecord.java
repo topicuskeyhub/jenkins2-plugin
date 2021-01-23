@@ -17,8 +17,10 @@
 
 package nl.topicus.keyhub.jenkins.model.response.record;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AdditionalObjectsOfVaultRecord {
     private RecordSecret secret;
 
