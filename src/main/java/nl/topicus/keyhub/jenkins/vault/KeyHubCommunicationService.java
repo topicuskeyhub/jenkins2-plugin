@@ -37,9 +37,9 @@ public class KeyHubCommunicationService {
     private static final Logger LOG = Logger.getLogger(KeyHubCommunicationService.class.getName());
     private RestClientBuilder restClientBuilder = new RestClientBuilder();
     private Map<String, KeyHubTokenResponse> currentClientIdWithTokens = new ConcurrentHashMap<>();
-    private final int renewTokenAfterMinutes = 58;
+    private static final int REFRESH_TOKEN_AFTER = 58;
 
-    private KeyHubTokenResponse fetchAuthenticationTokenAndGetVaultAccess(ClientCredentials clientCredentials,
+    private KeyHubTokenResponse fetchAuthenticationTokenIfNeeded(ClientCredentials clientCredentials,
             KeyHubTokenResponse currentToken) {
         if (currentToken != null && !isTokenExpired(currentToken)) {
             return currentToken;
@@ -67,11 +67,11 @@ public class KeyHubCommunicationService {
     }
 
     private boolean isTokenExpired(KeyHubTokenResponse keyhubToken) {
-        return ChronoUnit.MINUTES.between(keyhubToken.getTokenReceivedAt(), Instant.now()) >= renewTokenAfterMinutes;
+        return ChronoUnit.MINUTES.between(keyhubToken.getTokenReceivedAt(), Instant.now()) >= REFRESH_TOKEN_AFTER;
     }
 
     public Collection<KeyHubUsernamePasswordCredentials> fetchCredentials(ClientCredentials clientCredentials) {
-        fetchAuthenticationTokenAndGetVaultAccess(clientCredentials,
+        fetchAuthenticationTokenIfNeeded(clientCredentials,
                 currentClientIdWithTokens.get(clientCredentials.getClientId()));
         GlobalPluginConfiguration keyhubGlobalConfig = ExtensionList.lookup(GlobalPluginConfiguration.class)
                 .get(GlobalPluginConfiguration.class);
