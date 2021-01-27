@@ -52,6 +52,4 @@ public class KeyHubTokenResponse extends AccessTokenResponse {
     public void setTokenReceivedAt(Instant tokenReceivedAt) {
         this.tokenReceivedAt = tokenReceivedAt;
     }
-
-    
 }

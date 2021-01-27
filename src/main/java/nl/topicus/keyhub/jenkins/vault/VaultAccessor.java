@@ -29,7 +29,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpHeaders;
-import org.apache.http.client.ClientProtocolException;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.resteasy.client.jaxrs.internal.BasicAuthentication;
 
@@ -38,10 +37,8 @@ import nl.topicus.keyhub.jenkins.model.ClientCredentials;
 import nl.topicus.keyhub.jenkins.model.response.KeyHubTokenResponse;
 import nl.topicus.keyhub.jenkins.model.response.group.KeyHubGroup;
 import nl.topicus.keyhub.jenkins.model.response.group.ListOfKeyHubGroups;
-import nl.topicus.keyhub.jenkins.model.response.record.AdditionalObjectsOfVaultRecord;
 import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
 import nl.topicus.keyhub.jenkins.model.response.record.ListOfKeyHubVaultRecords;
-import nl.topicus.keyhub.jenkins.model.response.record.RecordSecret;
 
 public class VaultAccessor implements IVaultAccessor {
 
@@ -65,6 +62,10 @@ public class VaultAccessor implements IVaultAccessor {
         return this.keyhubToken;
     }
 
+    public ClientCredentials getClientCredentials() {
+        return this.clientCredentials;
+    }
+
     public VaultAccessor connect() {
         if (keyhubToken == null) {
             fetchAuthenticationTokenAndGetVaultAccess();
@@ -79,15 +80,6 @@ public class VaultAccessor implements IVaultAccessor {
         return this;
     }
 
-    /**
-     * 
-     * Fetches the Auth2.0 token including the vault access session from Keyhub.
-     * 
-     * @return
-     * @throws InterruptedException
-     * @throws ClientProtocolException
-     * @throws IOException
-     */
     private void fetchAuthenticationTokenAndGetVaultAccess() {
         if (clientCredentials.getClientSecret() == null) {
             throw new IllegalStateException("Cannot refresh access token, no secret stored/given.");
