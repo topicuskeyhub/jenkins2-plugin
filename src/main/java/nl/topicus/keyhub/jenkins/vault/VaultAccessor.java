@@ -52,10 +52,11 @@ public class VaultAccessor implements IVaultAccessor {
     public VaultAccessor() {
     }
 
-    public VaultAccessor(ClientCredentials credentials, String keyhubUri, RestClientBuilder restClientBuilder) {
+    public VaultAccessor(ClientCredentials credentials, String keyhubUri, RestClientBuilder restClientBuilder, KeyHubTokenResponse keyhubToken) {
         this.clientCredentials = credentials;
         this.keyhubUri = keyhubUri;
         this.restClientBuilder = restClientBuilder;
+        this.keyhubToken = keyhubToken;
     }
 
     public KeyHubTokenResponse getKeyhubToken() {
@@ -97,7 +98,6 @@ public class VaultAccessor implements IVaultAccessor {
     }
 
     public List<KeyHubGroup> fetchGroupData() throws IOException {
-        connect();
         UriBuilder groupDataUri = UriBuilder.fromUri(keyhubUri).path("/keyhub/rest/v1/group");
         ResteasyWebTarget target = restClientBuilder.getClient().target(groupDataUri);
         ListOfKeyHubGroups keyhubGroups;
@@ -110,7 +110,6 @@ public class VaultAccessor implements IVaultAccessor {
     }
 
     public List<KeyHubVaultRecord> fetchRecordsFromVault(List<KeyHubGroup> groups) throws IOException {
-        connect();
         ListOfKeyHubVaultRecords keyhubRecords = new ListOfKeyHubVaultRecords();
         for (KeyHubGroup group : groups) {
             UriBuilder recordsUri = UriBuilder.fromUri(group.getHref()).path("vault/record");
@@ -125,7 +124,6 @@ public class VaultAccessor implements IVaultAccessor {
     }
 
     public KeyHubVaultRecord fetchRecordSecret(String href) {
-        connect();
         UriBuilder recordSecretUri = UriBuilder.fromUri(href).queryParam("additional", "secret");
         ResteasyWebTarget target = restClientBuilder.getClient().target(recordSecretUri);
         String authHeader = "Bearer " + keyhubToken.getToken();

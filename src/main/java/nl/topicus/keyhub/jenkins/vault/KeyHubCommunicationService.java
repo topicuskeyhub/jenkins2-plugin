@@ -2,6 +2,7 @@ package nl.topicus.keyhub.jenkins.vault;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,21 +32,20 @@ import nl.topicus.keyhub.jenkins.model.response.KeyHubTokenResponse;
 import nl.topicus.keyhub.jenkins.model.response.group.KeyHubGroup;
 import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
 
-@Extension
 public class KeyHubCommunicationService {
 
     private static final Logger LOG = Logger.getLogger(KeyHubCommunicationService.class.getName());
     private RestClientBuilder restClientBuilder = new RestClientBuilder();
     private Map<String, KeyHubTokenResponse> currentClientIdWithTokens = new ConcurrentHashMap<>();
-    GlobalPluginConfiguration keyhubGlobalConfig = ExtensionList.lookup(GlobalPluginConfiguration.class)
-            .get(GlobalPluginConfiguration.class);
-    
-    private static final MediaType RESPONSE_ACCEPT = MediaType
-            .valueOf("application/vnd.topicus.keyhub+json;version=44");
-    // Als klassenatribuut of fetchCredentials de fetchAuthenticationTokenAndGetVaultAccess laten aanroepen met als extra parameter clientCredentials
-    private ClientCredentials clientCredentials;
+    private final int renewTokenAfterMinutes = 58;
 
-    private void fetchAuthenticationTokenAndGetVaultAccess() {
+    private KeyHubTokenResponse fetchAuthenticationTokenAndGetVaultAccess(ClientCredentials clientCredentials,
+            KeyHubTokenResponse currentToken) {
+        if (currentToken != null && !isTokenExpired(currentToken)) {
+            return currentToken;
+        }
+        GlobalPluginConfiguration keyhubGlobalConfig = ExtensionList.lookup(GlobalPluginConfiguration.class)
+                .get(GlobalPluginConfiguration.class);
         String keyhubUri = keyhubGlobalConfig.getKeyhubURI();
         KeyHubTokenResponse keyhubToken;
         if (clientCredentials.getClientSecret() == null) {
@@ -58,18 +58,28 @@ public class KeyHubCommunicationService {
         ResteasyWebTarget target = restClientBuilder.getClient().target(authenticateUri);
         target.register(new BasicAuthentication(clientCredentials.getClientId(),
                 Secret.toString(clientCredentials.getClientSecret())));
-        target.request().accept(RESPONSE_ACCEPT);
+        target.request().accept(MediaType.APPLICATION_JSON_TYPE);
         keyhubToken = target.request().post(Entity.form(connectionRequest), KeyHubTokenResponse.class);
         keyhubToken.setTokenReceivedAt(Instant.now());
+
+        currentClientIdWithTokens.put(clientCredentials.getClientId(), keyhubToken);
+        return keyhubToken;
+    }
+
+    private boolean isTokenExpired(KeyHubTokenResponse keyhubToken) {
+        return ChronoUnit.MINUTES.between(keyhubToken.getTokenReceivedAt(), Instant.now()) >= renewTokenAfterMinutes;
     }
 
     public Collection<KeyHubUsernamePasswordCredentials> fetchCredentials(ClientCredentials clientCredentials) {
-        this.clientCredentials = clientCredentials;
+        fetchAuthenticationTokenAndGetVaultAccess(clientCredentials,
+                currentClientIdWithTokens.get(clientCredentials.getClientId()));
+        GlobalPluginConfiguration keyhubGlobalConfig = ExtensionList.lookup(GlobalPluginConfiguration.class)
+                .get(GlobalPluginConfiguration.class);
         if (keyhubGlobalConfig.getKeyhubURI().isEmpty() || keyhubGlobalConfig.getKeyhubURI() == null) {
             return Collections.emptyList();
         }
         VaultAccessor vaultAccessor = new VaultAccessor(clientCredentials, keyhubGlobalConfig.getKeyhubURI(),
-                restClientBuilder);
+                restClientBuilder, currentClientIdWithTokens.get(clientCredentials.getClientId()));
         List<KeyHubGroup> khGroups = new ArrayList<>();
         List<KeyHubVaultRecord> khRecords = new ArrayList<>();
 
@@ -85,8 +95,6 @@ public class KeyHubCommunicationService {
                             .password(new SecretSupplier(vaultAccessor, khRecords.get(i).getHref())).build());
                 }
             }
-            currentClientIdWithTokens.put(vaultAccessor.getClientCredentials().getClientId(),
-                    vaultAccessor.getKeyhubToken());
             return jRecords;
 
         } catch (IOException e) {
@@ -94,9 +102,5 @@ public class KeyHubCommunicationService {
                     e.getMessage());
         }
         return Collections.emptyList();
-    }
-
-    public Map<String, KeyHubTokenResponse> getCurrentClientIdWithTokens() {
-        return this.currentClientIdWithTokens;
     }
 }
