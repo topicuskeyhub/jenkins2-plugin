@@ -52,7 +52,8 @@ public class VaultAccessor implements IVaultAccessor {
     public VaultAccessor() {
     }
 
-    public VaultAccessor(ClientCredentials credentials, String keyhubUri, RestClientBuilder restClientBuilder, KeyHubTokenResponse keyhubToken) {
+    public VaultAccessor(ClientCredentials credentials, String keyhubUri, RestClientBuilder restClientBuilder,
+            KeyHubTokenResponse keyhubToken) {
         this.clientCredentials = credentials;
         this.keyhubUri = keyhubUri;
         this.restClientBuilder = restClientBuilder;
@@ -65,20 +66,6 @@ public class VaultAccessor implements IVaultAccessor {
 
     public ClientCredentials getClientCredentials() {
         return this.clientCredentials;
-    }
-
-    public VaultAccessor connect() {
-        if (keyhubToken == null) {
-            fetchAuthenticationTokenAndGetVaultAccess();
-        }
-        System.out.println("Time Difference in hours: "
-                + ChronoUnit.HOURS.between(this.keyhubToken.getTokenReceivedAt(), Instant.now()));
-        System.out.println("Time Difference in seconds: "
-                + ChronoUnit.SECONDS.between(this.keyhubToken.getTokenReceivedAt(), Instant.now()));
-        if (keyhubToken.getExpiresIn() < 2) {
-            fetchAuthenticationTokenAndGetVaultAccess();
-        }
-        return this;
     }
 
     private void fetchAuthenticationTokenAndGetVaultAccess() {
