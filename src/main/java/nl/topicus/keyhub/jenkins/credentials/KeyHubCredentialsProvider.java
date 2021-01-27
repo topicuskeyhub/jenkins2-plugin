@@ -89,10 +89,7 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
         if (keyhubGlobalConfig.getKeyhubURI().isEmpty() || keyhubGlobalConfig.getKeyhubURI() == null) {
             return Collections.emptyList();
         }
-        if (this.vaultAccessor == null) {
-            this.vaultAccessor = new VaultAccessor(clientCredentials, keyhubGlobalConfig.getKeyhubURI(),
-                    restClientBuilder);
-        }
+        this.vaultAccessor = new VaultAccessor(clientCredentials, keyhubGlobalConfig.getKeyhubURI(), restClientBuilder);
         List<KeyHubGroup> khGroups = new ArrayList<>();
         List<KeyHubVaultRecord> khRecords = new ArrayList<>();
 
@@ -100,6 +97,8 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
         try {
             khGroups = vaultAccessor.fetchGroupData();
             khRecords = vaultAccessor.fetchRecordsFromVault(khGroups);
+            System.out.println("Groups size: " + khGroups.size());
+            System.out.println("Amount of Records in total: " + khRecords.size());
             for (int j = 0; j < khGroups.size(); j++) {
                 for (int i = 0; i < khRecords.size(); i++) {
                     jRecords.add(KeyHubUsernamePasswordCredentials.KeyHubCredentialsBuilder.newInstance()
