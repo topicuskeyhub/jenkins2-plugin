@@ -89,10 +89,7 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
         if (keyhubGlobalConfig.getKeyhubURI().isEmpty() || keyhubGlobalConfig.getKeyhubURI() == null) {
             return Collections.emptyList();
         }
-        if (this.vaultAccessor == null) {
-            this.vaultAccessor = new VaultAccessor(clientCredentials, keyhubGlobalConfig.getKeyhubURI(),
-                    restClientBuilder);
-        }
+        this.vaultAccessor = new VaultAccessor(clientCredentials, keyhubGlobalConfig.getKeyhubURI(), restClientBuilder);
         List<KeyHubGroup> khGroups = new ArrayList<>();
         List<KeyHubVaultRecord> khRecords = new ArrayList<>();
 
