@@ -37,7 +37,6 @@ public class KeyHubCommunicationService {
     private static final Logger LOG = Logger.getLogger(KeyHubCommunicationService.class.getName());
     private RestClientBuilder restClientBuilder = new RestClientBuilder();
     private Map<String, KeyHubTokenResponse> currentClientIdWithTokens = new ConcurrentHashMap<>();
-    private static final int REFRESH_TOKEN_AFTER = 58;
 
     private KeyHubTokenResponse fetchAuthenticationTokenIfNeeded(ClientCredentials clientCredentials,
             KeyHubTokenResponse currentToken) {
@@ -67,7 +66,8 @@ public class KeyHubCommunicationService {
     }
 
     private boolean isTokenExpired(KeyHubTokenResponse keyhubToken) {
-        return ChronoUnit.MINUTES.between(keyhubToken.getTokenReceivedAt(), Instant.now()) >= REFRESH_TOKEN_AFTER;
+        return keyhubToken.getTokenReceivedAt().plusSeconds(keyhubToken.getExpiresIn()).minus(2, ChronoUnit.MINUTES)
+                .isBefore(Instant.now());
     }
 
     public Collection<KeyHubUsernamePasswordCredentials> fetchCredentials(ClientCredentials clientCredentials) {
