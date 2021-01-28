@@ -40,7 +40,7 @@ public class KeyHubCommunicationService {
 
     private KeyHubTokenResponse fetchAuthenticationTokenIfNeeded(ClientCredentials clientCredentials,
             KeyHubTokenResponse currentToken) {
-        if (currentToken != null && !isTokenExpired(currentToken)) {
+        if (currentToken != null && !currentToken.isExpired()) {
             return currentToken;
         }
         GlobalPluginConfiguration keyhubGlobalConfig = ExtensionList.lookup(GlobalPluginConfiguration.class)
@@ -61,13 +61,12 @@ public class KeyHubCommunicationService {
         keyhubToken = target.request().post(Entity.form(connectionRequest), KeyHubTokenResponse.class);
         keyhubToken.setTokenReceivedAt(Instant.now());
 
-        currentClientIdWithTokens.put(clientCredentials.getClientId(), keyhubToken);
         return keyhubToken;
     }
 
-    private boolean isTokenExpired(KeyHubTokenResponse keyhubToken) {
-        return keyhubToken.getTokenReceivedAt().plusSeconds(keyhubToken.getExpiresIn()).minus(2, ChronoUnit.MINUTES)
-                .isBefore(Instant.now());
+    private KeyHubTokenResponse getTokenForClient(ClientCredentials credentials) {
+        return currentClientIdWithTokens.compute(credentials.getClientId(),
+                (clientId, token) -> fetchAuthenticationTokenIfNeeded(credentials, token));
     }
 
     public Collection<KeyHubUsernamePasswordCredentials> fetchCredentials(ClientCredentials clientCredentials) {
@@ -79,7 +78,7 @@ public class KeyHubCommunicationService {
             return Collections.emptyList();
         }
         VaultAccessor vaultAccessor = new VaultAccessor(clientCredentials, keyhubGlobalConfig.getKeyhubURI(),
-                restClientBuilder, currentClientIdWithTokens.get(clientCredentials.getClientId()));
+                restClientBuilder, getTokenForClient(clientCredentials));
         List<KeyHubGroup> khGroups = new ArrayList<>();
         List<KeyHubVaultRecord> khRecords = new ArrayList<>();
 

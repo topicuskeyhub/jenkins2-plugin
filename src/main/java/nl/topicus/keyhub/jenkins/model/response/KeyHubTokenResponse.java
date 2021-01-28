@@ -18,6 +18,7 @@
 package nl.topicus.keyhub.jenkins.model.response;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -51,5 +52,9 @@ public class KeyHubTokenResponse extends AccessTokenResponse {
 
     public void setTokenReceivedAt(Instant tokenReceivedAt) {
         this.tokenReceivedAt = tokenReceivedAt;
+    }
+
+    public boolean isExpired() {
+        return tokenReceivedAt.plusSeconds(getExpiresIn()).minus(2, ChronoUnit.MINUTES).isBefore(Instant.now());
     }
 }
