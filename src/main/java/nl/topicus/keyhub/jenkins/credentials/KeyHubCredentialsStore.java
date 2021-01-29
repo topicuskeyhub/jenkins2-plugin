@@ -40,6 +40,7 @@ import hudson.model.ModelObject;
 import hudson.security.ACL;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
+import nl.topicus.keyhub.jenkins.Messages;
 
 public class KeyHubCredentialsStore extends CredentialsStore {
 
@@ -135,7 +136,7 @@ public class KeyHubCredentialsStore extends CredentialsStore {
 
         @Override
         public String getDisplayName() {
-            return "KeyHub Vault";
+            return Messages.keyhubCredentialsStore();
         }
     }
 }

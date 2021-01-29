@@ -17,17 +17,16 @@
 
 package nl.topicus.keyhub.jenkins.vault;
 
-import java.io.IOException;
-import java.util.List;
+import java.util.Collection;
 
-import nl.topicus.keyhub.jenkins.model.response.group.KeyHubGroup;
+import nl.topicus.keyhub.jenkins.credentials.username_password.KeyHubUsernamePasswordCredentials;
+import nl.topicus.keyhub.jenkins.model.ClientCredentials;
 import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
 
-public interface IVaultAccessor {
+public interface IKeyHubCommuncationService {
 
-    public List<KeyHubGroup> fetchGroupData() throws IOException;
+    public Collection<KeyHubUsernamePasswordCredentials> fetchCredentials(ClientCredentials clientCredentials);
 
-    public List<KeyHubVaultRecord> fetchRecordsFromVault(List<KeyHubGroup> groups) throws IOException;
+    public KeyHubVaultRecord fetchRecordSecret(ClientCredentials clientCredentials, String href);
 
-    public KeyHubVaultRecord fetchRecordSecret(String href);
 }

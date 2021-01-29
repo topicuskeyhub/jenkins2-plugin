@@ -17,29 +17,29 @@
 
 package nl.topicus.keyhub.jenkins.credentials;
 
-import java.io.UnsupportedEncodingException;
 import java.util.function.Supplier;
-import java.util.logging.Logger;
 
 import hudson.util.Secret;
-import nl.topicus.keyhub.jenkins.model.response.record.AdditionalObjectsOfVaultRecord;
+import nl.topicus.keyhub.jenkins.model.ClientCredentials;
 import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
-import nl.topicus.keyhub.jenkins.model.response.record.RecordSecret;
-import nl.topicus.keyhub.jenkins.vault.IVaultAccessor;
+import nl.topicus.keyhub.jenkins.vault.KeyHubCommunicationService;
 
 public class SecretSupplier implements Supplier<Secret> {
 
-    private transient IVaultAccessor va;
+    private transient KeyHubCommunicationService keyhubCommunicationService;
+    private ClientCredentials clientCredentials;
     private String href;
 
-    public SecretSupplier(IVaultAccessor va, String href) {
-        this.va = va;
+    public SecretSupplier(KeyHubCommunicationService keyhubCommunicationsService, ClientCredentials clientCredentials,
+            String href) {
+        this.keyhubCommunicationService = keyhubCommunicationsService;
+        this.clientCredentials = clientCredentials;
         this.href = href;
     }
 
     @Override
     public Secret get() {
-        KeyHubVaultRecord secret = va.fetchRecordSecret(this.href);
+        KeyHubVaultRecord secret = keyhubCommunicationService.fetchRecordSecret(this.clientCredentials, this.href);
         return secret.getAdditionalObjects().getSecret().getPassword();
     }
 

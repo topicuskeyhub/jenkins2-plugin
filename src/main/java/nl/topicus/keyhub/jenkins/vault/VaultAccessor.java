@@ -18,21 +18,17 @@
 package nl.topicus.keyhub.jenkins.vault;
 
 import java.io.IOException;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
+import com.google.common.base.Strings;
+
 import org.apache.http.HttpHeaders;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import org.jboss.resteasy.client.jaxrs.internal.BasicAuthentication;
 
-import hudson.util.Secret;
 import nl.topicus.keyhub.jenkins.model.ClientCredentials;
 import nl.topicus.keyhub.jenkins.model.response.KeyHubTokenResponse;
 import nl.topicus.keyhub.jenkins.model.response.group.KeyHubGroup;
@@ -49,12 +45,12 @@ public class VaultAccessor implements IVaultAccessor {
     private static final MediaType RESPONSE_ACCEPT = MediaType
             .valueOf("application/vnd.topicus.keyhub+json;version=44");
 
-    public VaultAccessor() {
-    }
-
-    public VaultAccessor(ClientCredentials credentials, String keyhubUri, RestClientBuilder restClientBuilder,
+    public VaultAccessor(ClientCredentials clientCredentials, String keyhubUri, RestClientBuilder restClientBuilder,
             KeyHubTokenResponse keyhubToken) {
-        this.clientCredentials = credentials;
+        if (Strings.isNullOrEmpty(keyhubUri)) {
+            throw new IllegalArgumentException("KeyHub URI cannot be null or empty.");
+        }
+        this.clientCredentials = clientCredentials;
         this.keyhubUri = keyhubUri;
         this.restClientBuilder = restClientBuilder;
         this.keyhubToken = keyhubToken;
@@ -66,22 +62,6 @@ public class VaultAccessor implements IVaultAccessor {
 
     public ClientCredentials getClientCredentials() {
         return this.clientCredentials;
-    }
-
-    private void fetchAuthenticationTokenAndGetVaultAccess() {
-        if (clientCredentials.getClientSecret() == null) {
-            throw new IllegalStateException("Cannot refresh access token, no secret stored/given.");
-        }
-
-        UriBuilder authenticateUri = UriBuilder.fromUri(keyhubUri).path("/login/oauth2/token").queryParam("authVault",
-                "access");
-        Form connectionRequest = new Form().param("grant_type", "client_credentials");
-        ResteasyWebTarget target = restClientBuilder.getClient().target(authenticateUri);
-        target.register(new BasicAuthentication(clientCredentials.getClientId(),
-                Secret.toString(clientCredentials.getClientSecret())));
-        target.request().accept(RESPONSE_ACCEPT);
-        this.keyhubToken = target.request().post(Entity.form(connectionRequest), KeyHubTokenResponse.class);
-        this.keyhubToken.setTokenReceivedAt(Instant.now());
     }
 
     public List<KeyHubGroup> fetchGroupData() throws IOException {

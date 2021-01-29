@@ -27,6 +27,7 @@ import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 import hudson.util.Secret;
+import nl.topicus.keyhub.jenkins.Messages;
 import nl.topicus.keyhub.jenkins.model.ClientCredentials;
 
 public class ClientConfiguration extends AbstractDescribableImpl<ClientConfiguration> implements Serializable {
@@ -73,7 +74,7 @@ public class ClientConfiguration extends AbstractDescribableImpl<ClientConfigura
         @Override
         @NonNull
         public String getDisplayName() {
-            return "Vault Configuration";
+            return Messages.vaultConfiguration();
         }
     }
 }

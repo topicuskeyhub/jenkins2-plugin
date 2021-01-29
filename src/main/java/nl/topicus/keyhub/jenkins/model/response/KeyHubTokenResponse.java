@@ -19,7 +19,6 @@ package nl.topicus.keyhub.jenkins.model.response;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

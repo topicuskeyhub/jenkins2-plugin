@@ -24,6 +24,7 @@ import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredenti
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.util.Secret;
+import nl.topicus.keyhub.jenkins.Messages;
 import nl.topicus.keyhub.jenkins.credentials.AbstractKeyHubCredentials;
 
 public class KeyHubUsernamePasswordCredentials extends AbstractKeyHubCredentials
@@ -50,12 +51,12 @@ public class KeyHubUsernamePasswordCredentials extends AbstractKeyHubCredentials
         @Override
         @NonNull
         public String getDisplayName() {
-            return "KeyHubUsernamePasswordCredentials";
+            return Messages.keyhubUsernamePassword();
         }
 
         @Override
         public String getIconClassName() {
-            return "icon-keyhub-credentials-vault";
+            return "icon-credentials-userpass";
         }
     }
 

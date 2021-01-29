@@ -37,6 +37,7 @@ import hudson.Extension;
 import hudson.model.ItemGroup;
 import hudson.model.ModelObject;
 import hudson.security.ACL;
+import nl.topicus.keyhub.jenkins.Messages;
 import nl.topicus.keyhub.jenkins.configuration.FolderKeyHubClientConfiguration;
 import nl.topicus.keyhub.jenkins.credentials.username_password.KeyHubUsernamePasswordCredentials;
 import nl.topicus.keyhub.jenkins.model.ClientCredentials;
@@ -45,7 +46,6 @@ import nl.topicus.keyhub.jenkins.vault.KeyHubCommunicationService;
 @Extension
 public class KeyHubCredentialsProvider extends CredentialsProvider {
 
-    private static final Logger LOG = Logger.getLogger(KeyHubCredentialsProvider.class.getName());
     private KeyHubCommunicationService communicationService = new KeyHubCommunicationService();
 
     @SuppressWarnings("rawtypes")
@@ -79,7 +79,7 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
 
     @Override
     public String getDisplayName() {
-        return "KeyHub Credentials Provider"; // TODO Use Properties file
+        return Messages.keyhubCredentialsProvider();
     }
 
     @Override

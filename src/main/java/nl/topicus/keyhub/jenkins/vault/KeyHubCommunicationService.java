@@ -1,8 +1,24 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package nl.topicus.keyhub.jenkins.vault;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -17,11 +33,9 @@ import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
-import org.codehaus.groovy.runtime.powerassert.SourceText;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.resteasy.client.jaxrs.internal.BasicAuthentication;
 
-import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.util.Secret;
 import nl.topicus.keyhub.jenkins.configuration.GlobalPluginConfiguration;
@@ -32,7 +46,7 @@ import nl.topicus.keyhub.jenkins.model.response.KeyHubTokenResponse;
 import nl.topicus.keyhub.jenkins.model.response.group.KeyHubGroup;
 import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
 
-public class KeyHubCommunicationService {
+public class KeyHubCommunicationService implements IKeyHubCommuncationService {
 
     private static final Logger LOG = Logger.getLogger(KeyHubCommunicationService.class.getName());
     private RestClientBuilder restClientBuilder = new RestClientBuilder();
@@ -70,8 +84,6 @@ public class KeyHubCommunicationService {
     }
 
     public Collection<KeyHubUsernamePasswordCredentials> fetchCredentials(ClientCredentials clientCredentials) {
-        fetchAuthenticationTokenIfNeeded(clientCredentials,
-                currentClientIdWithTokens.get(clientCredentials.getClientId()));
         GlobalPluginConfiguration keyhubGlobalConfig = ExtensionList.lookup(GlobalPluginConfiguration.class)
                 .get(GlobalPluginConfiguration.class);
         if (keyhubGlobalConfig.getKeyhubURI().isEmpty() || keyhubGlobalConfig.getKeyhubURI() == null) {
@@ -91,7 +103,7 @@ public class KeyHubCommunicationService {
                     jRecords.add(KeyHubUsernamePasswordCredentials.KeyHubCredentialsBuilder.newInstance()
                             .id(khRecords.get(i).getUUID()).recordName(khRecords.get(i).getName())
                             .href(khRecords.get(i).getHref()).username(khRecords.get(i).getUsername())
-                            .password(new SecretSupplier(vaultAccessor, khRecords.get(i).getHref())).build());
+                            .password(new SecretSupplier(this, clientCredentials, khRecords.get(i).getHref())).build());
                 }
             }
             return jRecords;
@@ -102,4 +114,14 @@ public class KeyHubCommunicationService {
         }
         return Collections.emptyList();
     }
+
+    public KeyHubVaultRecord fetchRecordSecret(ClientCredentials clientCredentials, String href) {
+        GlobalPluginConfiguration keyhubGlobalConfig = ExtensionList.lookup(GlobalPluginConfiguration.class)
+                .get(GlobalPluginConfiguration.class);
+        VaultAccessor vaultAccessor = new VaultAccessor(clientCredentials, keyhubGlobalConfig.getKeyhubURI(),
+                restClientBuilder, getTokenForClient(clientCredentials));
+
+        return vaultAccessor.fetchRecordSecret(href);
+    }
+
 }
