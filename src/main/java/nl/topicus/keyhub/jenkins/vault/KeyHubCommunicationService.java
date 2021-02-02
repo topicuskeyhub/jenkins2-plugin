@@ -86,8 +86,6 @@ public class KeyHubCommunicationService implements IKeyHubCommuncationService {
 
     public Collection<KeyHubUsernamePasswordCredentials> fetchCredentials(ClientCredentials clientCredentials) {
         Optional<String> keyhubURI = getKeyHubURI();
-        GlobalPluginConfiguration keyhubGlobalConfig = ExtensionList.lookup(GlobalPluginConfiguration.class)
-                .get(GlobalPluginConfiguration.class);
         if (!keyhubURI.isPresent()) {
             return Collections.emptyList();
         }
