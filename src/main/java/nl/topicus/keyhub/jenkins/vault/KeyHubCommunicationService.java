@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,15 +60,13 @@ public class KeyHubCommunicationService implements IKeyHubCommuncationService {
         if (currentToken != null && !currentToken.isExpired()) {
             return currentToken;
         }
-        GlobalPluginConfiguration keyhubGlobalConfig = ExtensionList.lookup(GlobalPluginConfiguration.class)
-                .get(GlobalPluginConfiguration.class);
-        String keyhubUri = keyhubGlobalConfig.getKeyhubURI();
+        String keyhubURI = getKeyHubURI().get();
         KeyHubTokenResponse keyhubToken;
         if (clientCredentials.getClientSecret() == null) {
             throw new IllegalStateException("Cannot refresh access token, no secret stored/given.");
         }
 
-        UriBuilder authenticateUri = UriBuilder.fromUri(keyhubUri).path("/login/oauth2/token").queryParam("authVault",
+        UriBuilder authenticateUri = UriBuilder.fromUri(keyhubURI).path("/login/oauth2/token").queryParam("authVault",
                 "access");
         Form connectionRequest = new Form().param("grant_type", "client_credentials");
         ResteasyWebTarget target = restClientBuilder.getClient().target(authenticateUri);
@@ -86,12 +85,11 @@ public class KeyHubCommunicationService implements IKeyHubCommuncationService {
     }
 
     public Collection<KeyHubUsernamePasswordCredentials> fetchCredentials(ClientCredentials clientCredentials) {
-        GlobalPluginConfiguration keyhubGlobalConfig = ExtensionList.lookup(GlobalPluginConfiguration.class)
-                .get(GlobalPluginConfiguration.class);
-        if (Strings.isNullOrEmpty(keyhubGlobalConfig.getKeyhubURI()) || keyhubGlobalConfig.getKeyhubURI().isEmpty()) {
+        Optional<String> keyhubURI = getKeyHubURI();
+        if (!keyhubURI.isPresent()) {
             return Collections.emptyList();
         }
-        VaultAccessor vaultAccessor = new VaultAccessor(clientCredentials, keyhubGlobalConfig.getKeyhubURI(),
+        VaultAccessor vaultAccessor = new VaultAccessor(clientCredentials, keyhubURI.get(),
                 restClientBuilder, getTokenForClient(clientCredentials));
         List<KeyHubGroup> khGroups = new ArrayList<>();
         List<KeyHubVaultRecord> khRecords = new ArrayList<>();
@@ -118,12 +116,16 @@ public class KeyHubCommunicationService implements IKeyHubCommuncationService {
     }
 
     public KeyHubVaultRecord fetchRecordSecret(ClientCredentials clientCredentials, String href) {
-        GlobalPluginConfiguration keyhubGlobalConfig = ExtensionList.lookup(GlobalPluginConfiguration.class)
-                .get(GlobalPluginConfiguration.class);
-        VaultAccessor vaultAccessor = new VaultAccessor(clientCredentials, keyhubGlobalConfig.getKeyhubURI(),
-                restClientBuilder, getTokenForClient(clientCredentials));
+        String keyhubURI = getKeyHubURI().get();
+        VaultAccessor vaultAccessor = new VaultAccessor(clientCredentials, keyhubURI, restClientBuilder,
+                getTokenForClient(clientCredentials));
 
         return vaultAccessor.fetchRecordSecret(href);
+    }
+
+    private Optional<String> getKeyHubURI() {
+        return Optional.ofNullable(Strings.emptyToNull(ExtensionList.lookup(GlobalPluginConfiguration.class)
+                .get(GlobalPluginConfiguration.class).getKeyhubURI()));
     }
 
 }
