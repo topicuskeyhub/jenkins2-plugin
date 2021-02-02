@@ -33,6 +33,8 @@ import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
+import com.google.common.base.Strings;
+
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.resteasy.client.jaxrs.internal.BasicAuthentication;
 
@@ -86,7 +88,7 @@ public class KeyHubCommunicationService implements IKeyHubCommuncationService {
     public Collection<KeyHubUsernamePasswordCredentials> fetchCredentials(ClientCredentials clientCredentials) {
         GlobalPluginConfiguration keyhubGlobalConfig = ExtensionList.lookup(GlobalPluginConfiguration.class)
                 .get(GlobalPluginConfiguration.class);
-        if (keyhubGlobalConfig.getKeyhubURI().isEmpty() || keyhubGlobalConfig.getKeyhubURI() == null) {
+        if (Strings.isNullOrEmpty(keyhubGlobalConfig.getKeyhubURI()) || keyhubGlobalConfig.getKeyhubURI().isEmpty()) {
             return Collections.emptyList();
         }
         VaultAccessor vaultAccessor = new VaultAccessor(clientCredentials, keyhubGlobalConfig.getKeyhubURI(),
