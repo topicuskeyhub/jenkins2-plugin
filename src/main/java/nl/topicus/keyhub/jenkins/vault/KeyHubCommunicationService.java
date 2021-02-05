@@ -92,8 +92,8 @@ public class KeyHubCommunicationService implements IKeyHubCommunicationService, 
         if (!keyhubURI.isPresent()) {
             return Collections.emptyList();
         }
-        VaultAccessor vaultAccessor = new VaultAccessor(clientCredentials, keyhubURI.get(),
-                restClientBuilder, getTokenForClient(clientCredentials));
+        VaultAccessor vaultAccessor = new VaultAccessor(clientCredentials, keyhubURI.get(), restClientBuilder,
+                getTokenForClient(clientCredentials));
         List<KeyHubGroup> khGroups = new ArrayList<>();
         List<KeyHubVaultRecord> khRecords = new ArrayList<>();
 
@@ -127,8 +127,7 @@ public class KeyHubCommunicationService implements IKeyHubCommunicationService, 
     }
 
     private Optional<String> getKeyHubURI() {
-        return Optional.ofNullable(Strings.emptyToNull(ExtensionList.lookup(GlobalPluginConfiguration.class)
-                .get(GlobalPluginConfiguration.class).getKeyhubURI()));
+        return Optional.ofNullable(
+                Strings.emptyToNull(ExtensionList.lookupSingleton(GlobalPluginConfiguration.class).getKeyhubURI()));
     }
-
 }
