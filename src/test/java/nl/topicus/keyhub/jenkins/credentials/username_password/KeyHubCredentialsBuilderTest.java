@@ -1,4 +1,4 @@
-package io.jenkins.plugins.credentials.username_password;
+package nl.topicus.keyhub.jenkins.credentials.username_password;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;

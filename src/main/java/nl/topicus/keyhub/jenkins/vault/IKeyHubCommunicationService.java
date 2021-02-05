@@ -23,7 +23,7 @@ import nl.topicus.keyhub.jenkins.credentials.username_password.KeyHubUsernamePas
 import nl.topicus.keyhub.jenkins.model.ClientCredentials;
 import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
 
-public interface IKeyHubCommuncationService {
+public interface IKeyHubCommunicationService {
 
     public Collection<KeyHubUsernamePasswordCredentials> fetchCredentials(ClientCredentials clientCredentials);
 

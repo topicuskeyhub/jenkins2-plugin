@@ -34,7 +34,7 @@ public class KeyHubUsernamePasswordCredentialsSnapshotTaker
     @Override
     public KeyHubUsernamePasswordCredentials snapshot(KeyHubUsernamePasswordCredentials credential) {
         return KeyHubUsernamePasswordCredentials.KeyHubCredentialsBuilder.newInstance().id(credential.getId())
-                .recordName(credential.getRecordName()).href(credential.getHref()).username(credential.getUsername())
+                .recordName(credential.getDescription()).href(credential.getHref()).username(credential.getUsername())
                 .password(new Snapshot<>(credential.getPassword())).build();
     }
 }
