@@ -41,13 +41,10 @@ import nl.topicus.keyhub.jenkins.Messages;
 import nl.topicus.keyhub.jenkins.configuration.FolderKeyHubClientConfiguration;
 import nl.topicus.keyhub.jenkins.credentials.username_password.KeyHubUsernamePasswordCredentials;
 import nl.topicus.keyhub.jenkins.model.ClientCredentials;
-import nl.topicus.keyhub.jenkins.vault.IKeyHubCommuncationService;
-import nl.topicus.keyhub.jenkins.vault.KeyHubCommunicationService;
+import nl.topicus.keyhub.jenkins.vault.IKeyHubCommunicationService;
 
 @Extension
 public class KeyHubCredentialsProvider extends CredentialsProvider {
-
-    private IKeyHubCommuncationService communicationService = ExtensionList.lookupSingleton(IKeyHubCommuncationService.class);
 
     @SuppressWarnings("rawtypes")
     @Override
@@ -67,7 +64,7 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
                 if (folderClientCredentials.getClientId().isEmpty()) {
                     return Collections.emptyList();
                 }
-                Collection<KeyHubUsernamePasswordCredentials> khUsernamePasswordCredentials = communicationService
+                Collection<KeyHubUsernamePasswordCredentials> khUsernamePasswordCredentials = getKeyHubCommunicationService()
                         .fetchCredentials(folderClientCredentials);
                 for (KeyHubUsernamePasswordCredentials credentials : khUsernamePasswordCredentials) {
                     result.add(type.cast(credentials));
@@ -76,6 +73,10 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
             return result;
         }
         return Collections.emptyList();
+    }
+
+    public IKeyHubCommunicationService getKeyHubCommunicationService() {
+        return ExtensionList.lookupSingleton(IKeyHubCommunicationService.class);
     }
 
     @Override

@@ -25,7 +25,7 @@ import hudson.ExtensionList;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.tasks.Shell;
-import nl.topicus.keyhub.jenkins.vault.IKeyHubCommuncationService;
+import nl.topicus.keyhub.jenkins.vault.IKeyHubCommunicationService;
 import nl.topicus.keyhub.jenkins.vault.KeyHubCommunicationService;
 
 public class GlobalPluginConfigurationTest {

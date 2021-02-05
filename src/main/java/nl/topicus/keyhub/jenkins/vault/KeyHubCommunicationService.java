@@ -52,7 +52,7 @@ import nl.topicus.keyhub.jenkins.model.response.group.KeyHubGroup;
 import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
 
 @Extension
-public class KeyHubCommunicationService implements IKeyHubCommuncationService, ExtensionPoint {
+public class KeyHubCommunicationService implements IKeyHubCommunicationService, ExtensionPoint {
 
     private static final Logger LOG = Logger.getLogger(KeyHubCommunicationService.class.getName());
     private RestClientBuilder restClientBuilder = new RestClientBuilder();
