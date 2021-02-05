@@ -15,36 +15,18 @@
  * limitations under the License.
  */
 
-package nl.topicus.keyhub.jenkins.configuration;
+package nl.topicus.keyhub.jenkins.vault;
 
-import org.kohsuke.stapler.DataBoundSetter;
+import java.util.Collection;
 
-import hudson.Extension;
-import jenkins.model.GlobalConfiguration;
+import nl.topicus.keyhub.jenkins.credentials.username_password.KeyHubUsernamePasswordCredentials;
+import nl.topicus.keyhub.jenkins.model.ClientCredentials;
+import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
 
-@Extension
-public class GlobalPluginConfiguration extends GlobalConfiguration {
+public interface IKeyHubCommuncationService {
 
-    private String keyhubURI;
+    public Collection<KeyHubUsernamePasswordCredentials> fetchCredentials(ClientCredentials clientCredentials);
 
-    public GlobalPluginConfiguration() {
-        load();
-    }
+    public KeyHubVaultRecord fetchRecordSecret(ClientCredentials clientCredentials, String href);
 
-    public GlobalPluginConfiguration(String keyhubURI) {
-        this.keyhubURI = keyhubURI;
-    }
-
-    public static GlobalPluginConfiguration getInstance() {
-        return all().get(GlobalPluginConfiguration.class);
-    }
-
-    public String getKeyhubURI() {
-        return this.keyhubURI;
-    }
-
-    @DataBoundSetter
-    public void setKeyhubURI(String keyhubURI) {
-        this.keyhubURI = keyhubURI;
-    }
 }

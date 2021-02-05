@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
+ * contributor license agreements. See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -18,14 +18,10 @@
 package nl.topicus.keyhub.jenkins.vault;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.List;
 
-import hudson.util.Secret;
 import nl.topicus.keyhub.jenkins.model.response.group.KeyHubGroup;
-import nl.topicus.keyhub.jenkins.model.response.record.AdditionalObjectsOfVaultRecord;
 import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
-import nl.topicus.keyhub.jenkins.model.response.record.RecordSecret;
 
 public interface IVaultAccessor {
 
