@@ -34,9 +34,7 @@ public class KeyHubUsernamePasswordCredentials extends AbstractKeyHubCredentials
     private Supplier<Secret> password;
 
     public KeyHubUsernamePasswordCredentials(KeyHubCredentialsBuilder builder) {
-        super(builder.id, builder.recordName);
-        this.href = builder.href;
-        this.username = builder.username;
+        super(builder.id, builder.recordName, builder.href, builder.username);
         this.password = builder.password;
     }
 
