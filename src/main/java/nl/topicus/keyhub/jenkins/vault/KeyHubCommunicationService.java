@@ -39,7 +39,9 @@ import com.google.common.base.Strings;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.resteasy.client.jaxrs.internal.BasicAuthentication;
 
+import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.ExtensionPoint;
 import hudson.util.Secret;
 import nl.topicus.keyhub.jenkins.configuration.GlobalPluginConfiguration;
 import nl.topicus.keyhub.jenkins.credentials.SecretSupplier;
@@ -49,7 +51,8 @@ import nl.topicus.keyhub.jenkins.model.response.KeyHubTokenResponse;
 import nl.topicus.keyhub.jenkins.model.response.group.KeyHubGroup;
 import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
 
-public class KeyHubCommunicationService implements IKeyHubCommuncationService {
+@Extension
+public class KeyHubCommunicationService implements IKeyHubCommuncationService, ExtensionPoint {
 
     private static final Logger LOG = Logger.getLogger(KeyHubCommunicationService.class.getName());
     private RestClientBuilder restClientBuilder = new RestClientBuilder();

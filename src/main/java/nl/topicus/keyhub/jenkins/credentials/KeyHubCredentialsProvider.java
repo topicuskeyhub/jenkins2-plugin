@@ -33,6 +33,7 @@ import org.acegisecurity.Authentication;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.model.ItemGroup;
 import hudson.model.ModelObject;
 import hudson.security.ACL;
@@ -40,12 +41,13 @@ import nl.topicus.keyhub.jenkins.Messages;
 import nl.topicus.keyhub.jenkins.configuration.FolderKeyHubClientConfiguration;
 import nl.topicus.keyhub.jenkins.credentials.username_password.KeyHubUsernamePasswordCredentials;
 import nl.topicus.keyhub.jenkins.model.ClientCredentials;
+import nl.topicus.keyhub.jenkins.vault.IKeyHubCommuncationService;
 import nl.topicus.keyhub.jenkins.vault.KeyHubCommunicationService;
 
 @Extension
 public class KeyHubCredentialsProvider extends CredentialsProvider {
 
-    private KeyHubCommunicationService communicationService = new KeyHubCommunicationService();
+    private IKeyHubCommuncationService communicationService = ExtensionList.lookupSingleton(IKeyHubCommuncationService.class);
 
     @SuppressWarnings("rawtypes")
     @Override
