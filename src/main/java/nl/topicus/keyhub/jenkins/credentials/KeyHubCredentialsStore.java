@@ -68,7 +68,7 @@ public class KeyHubCredentialsStore extends CredentialsStore {
     @Override
     public List<Credentials> getCredentials(Domain domain) {
         if (Domain.global().equals(domain) && Jenkins.get().hasPermission(CredentialsProvider.VIEW)) {
-            return provider.getCredentials(Credentials.class, itemGroup, ACL.SYSTEM);
+            return provider.getCredentialsForStore(Credentials.class, itemGroup);
         }
         return Collections.emptyList();
 
