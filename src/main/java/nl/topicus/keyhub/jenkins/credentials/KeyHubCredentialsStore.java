@@ -37,7 +37,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.ItemGroup;
 import hudson.model.ModelObject;
-import hudson.security.ACL;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
 import nl.topicus.keyhub.jenkins.Messages;
