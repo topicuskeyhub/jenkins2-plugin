@@ -54,24 +54,8 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
             List<C> result = new ArrayList<>();
             while (itemGroup != null) {
                 if (itemGroup instanceof AbstractFolder) {
-                    final AbstractFolder<?> folder = AbstractFolder.class.cast(itemGroup);
-                    FolderKeyHubClientConfiguration property = Optional
-                            .ofNullable(folder.getProperties().get(FolderKeyHubClientConfiguration.class))
-                            .orElse(new FolderKeyHubClientConfiguration());
-                    if (property.getConfiguration() == null) {
-                        return Collections.emptyList();
-                    }
-                    ClientCredentials folderClientCredentials = property.getConfiguration().getClientCredentials();
-                    if (folderClientCredentials.getClientId().isEmpty()) {
-                        return Collections.emptyList();
-                    }
-                    Collection<KeyHubUsernamePasswordCredentials> khUsernamePasswordCredentials = getKeyHubCommunicationService()
-                            .fetchCredentials(folderClientCredentials);
-                    for (KeyHubUsernamePasswordCredentials credentials : khUsernamePasswordCredentials) {
-                        result.add(type.cast(credentials));
-                    }
+                    result.addAll(getCredentialsForItemGroup(type, itemGroup));
                 }
-
                 if (itemGroup instanceof Item) {
                     itemGroup = Item.class.cast(itemGroup).getParent();
                 } else {
@@ -83,7 +67,7 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
         return Collections.emptyList();
     }
 
-    public <C extends Credentials> List<C> getCredentialsForStore(Class<C> type, ItemGroup itemGroup) {
+    public <C extends Credentials> List<C> getCredentialsForItemGroup(Class<C> type, ItemGroup itemGroup) {
         List<C> result = new ArrayList<>();
         if (itemGroup instanceof AbstractFolder) {
             final AbstractFolder<?> folder = AbstractFolder.class.cast(itemGroup);
