@@ -67,6 +67,7 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
         return Collections.emptyList();
     }
 
+    @SuppressWarnings("rawtypes")
     public <C extends Credentials> List<C> getCredentialsForItemGroup(Class<C> type, ItemGroup itemGroup) {
         List<C> result = new ArrayList<>();
         if (itemGroup instanceof AbstractFolder) {
