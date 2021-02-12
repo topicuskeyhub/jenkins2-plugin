@@ -21,10 +21,11 @@
     <name>KeyHub Vault Credentials Provider</name>
 
     <scm>
-		<url>https://github.com/topicuskeyhub/jenkins2-plugin</url>
-		<connection>scm:git:git@github.com:topicuskeyhub/jenkins2-plugin.git</connection>
-		<tag>HEAD</tag>
-	</scm>
+        <url>https://github.com/topicuskeyhub/jenkins2-plugin</url>
+        <connection>scm:git:git@github.com:topicuskeyhub/jenkins2-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:topicuskeyhub/jenkins2-plugin.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
 
     <build>
         <pluginManagement>
