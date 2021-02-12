@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Optional;
 
 import com.cloudbees.hudson.plugins.folder.AbstractFolder;
-import com.cloudbees.hudson.plugins.folder.Folder;
 import com.cloudbees.plugins.credentials.Credentials;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.CredentialsStore;
@@ -34,6 +33,7 @@ import org.acegisecurity.Authentication;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.ModelObject;
 import hudson.security.ACL;
@@ -52,27 +52,42 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
             @Nullable Authentication authentication) {
         if (ACL.SYSTEM.equals(authentication)) {
             List<C> result = new ArrayList<>();
-            if (itemGroup instanceof Folder) {
-                final AbstractFolder<?> folder = AbstractFolder.class.cast(itemGroup);
-                FolderKeyHubClientConfiguration property = Optional
-                        .ofNullable(folder.getProperties().get(FolderKeyHubClientConfiguration.class))
-                        .orElse(new FolderKeyHubClientConfiguration());
-                if (property.getConfiguration() == null) {
-                    return Collections.emptyList();
+            while (itemGroup != null) {
+                if (itemGroup instanceof AbstractFolder) {
+                    result.addAll(getCredentialsForItemGroup(type, itemGroup));
                 }
-                ClientCredentials folderClientCredentials = property.getConfiguration().getClientCredentials();
-                if (folderClientCredentials.getClientId().isEmpty()) {
-                    return Collections.emptyList();
-                }
-                Collection<KeyHubUsernamePasswordCredentials> khUsernamePasswordCredentials = getKeyHubCommunicationService()
-                        .fetchCredentials(folderClientCredentials);
-                for (KeyHubUsernamePasswordCredentials credentials : khUsernamePasswordCredentials) {
-                    result.add(type.cast(credentials));
+                if (itemGroup instanceof Item) {
+                    itemGroup = Item.class.cast(itemGroup).getParent();
+                } else {
+                    break;
                 }
             }
             return result;
         }
         return Collections.emptyList();
+    }
+
+    public <C extends Credentials> List<C> getCredentialsForItemGroup(Class<C> type, ItemGroup itemGroup) {
+        List<C> result = new ArrayList<>();
+        if (itemGroup instanceof AbstractFolder) {
+            final AbstractFolder<?> folder = AbstractFolder.class.cast(itemGroup);
+            FolderKeyHubClientConfiguration property = Optional
+                    .ofNullable(folder.getProperties().get(FolderKeyHubClientConfiguration.class))
+                    .orElse(new FolderKeyHubClientConfiguration());
+            if (property.getConfiguration() == null) {
+                return Collections.emptyList();
+            }
+            ClientCredentials folderClientCredentials = property.getConfiguration().getClientCredentials();
+            if (folderClientCredentials.getClientId().isEmpty()) {
+                return Collections.emptyList();
+            }
+            Collection<KeyHubUsernamePasswordCredentials> khUsernamePasswordCredentials = getKeyHubCommunicationService()
+                    .fetchCredentials(folderClientCredentials);
+            for (KeyHubUsernamePasswordCredentials credentials : khUsernamePasswordCredentials) {
+                result.add(type.cast(credentials));
+            }
+        }
+        return result;
     }
 
     public IKeyHubCommunicationService getKeyHubCommunicationService() {

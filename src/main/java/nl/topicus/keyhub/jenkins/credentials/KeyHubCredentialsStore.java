@@ -37,7 +37,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.ItemGroup;
 import hudson.model.ModelObject;
-import hudson.security.ACL;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
 import nl.topicus.keyhub.jenkins.Messages;
@@ -68,7 +67,7 @@ public class KeyHubCredentialsStore extends CredentialsStore {
     @Override
     public List<Credentials> getCredentials(Domain domain) {
         if (Domain.global().equals(domain) && Jenkins.get().hasPermission(CredentialsProvider.VIEW)) {
-            return provider.getCredentials(Credentials.class, itemGroup, ACL.SYSTEM);
+            return provider.getCredentialsForItemGroup(Credentials.class, itemGroup);
         }
         return Collections.emptyList();
 

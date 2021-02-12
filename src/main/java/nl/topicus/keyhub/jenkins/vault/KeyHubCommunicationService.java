@@ -94,13 +94,10 @@ public class KeyHubCommunicationService implements IKeyHubCommunicationService, 
         }
         VaultAccessor vaultAccessor = new VaultAccessor(clientCredentials, keyhubURI.get(), restClientBuilder,
                 getTokenForClient(clientCredentials));
-        List<KeyHubGroup> khGroups = new ArrayList<>();
-        List<KeyHubVaultRecord> khRecords = new ArrayList<>();
-
         List<KeyHubUsernamePasswordCredentials> jRecords = new ArrayList<>();
         try {
-            khGroups = vaultAccessor.fetchGroupData();
-            khRecords = vaultAccessor.fetchRecordsFromVault(khGroups);
+            List<KeyHubGroup> khGroups = vaultAccessor.fetchGroupData();
+            List<KeyHubVaultRecord> khRecords = vaultAccessor.fetchRecordsFromVault(khGroups);
             for (int j = 0; j < khGroups.size(); j++) {
                 for (int i = 0; i < khRecords.size(); i++) {
                     jRecords.add(KeyHubUsernamePasswordCredentials.KeyHubCredentialsBuilder.newInstance()
