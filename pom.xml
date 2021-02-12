@@ -7,7 +7,7 @@
         <version>4.4</version>
         <relativePath />
     </parent>
-    <groupId>io.jenkins.plugins</groupId>
+    <groupId>nl.topicus.keyhub.jenkins</groupId>
     <artifactId>keyhub-vault-plugin</artifactId>
     <version>${revision}${changelist}</version>
     <packaging>hpi</packaging>
