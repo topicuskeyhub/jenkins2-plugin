@@ -1,6 +1,18 @@
 package nl.topicus.keyhub.jenkins.vault;
 
-import org.junit.Before;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.powermock.api.mockito.PowerMockito.when;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,61 +21,58 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.spy;
-import static org.powermock.api.mockito.PowerMockito.when;
-import static org.powermock.api.support.membermodification.MemberMatcher.method;
-
-import java.util.Collection;
-import java.util.Collections;
-
-import hudson.ExtensionList;
 import hudson.util.Secret;
 import nl.topicus.keyhub.jenkins.credentials.username_password.KeyHubUsernamePasswordCredentials;
 import nl.topicus.keyhub.jenkins.model.ClientCredentials;
+import nl.topicus.keyhub.jenkins.model.response.KeyHubTokenResponse;
+import nl.topicus.keyhub.jenkins.model.response.group.KeyHubGroup;
+import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
 
+// @RunWith(PowerMockRunner.class)
 @PrepareForTest(KeyHubCommunicationService.class)
-@RunWith(PowerMockRunner.class)
+// @PowerMockIgnore({ "javax.net.ssl.*", "javax.management.*",
+// "javax.crypto.JceSecurity.*", "javax.crypto.*" })
 public class KeyHubCommunicationServiceTest {
 
-    // @Rule
-    // public JenkinsRule jenkins = new JenkinsRule();
-
-    //private IKeyHubCommunicationService spyCommunicationService = new KeyHubCommunicationService();
-
-    @Before
-    public void setUp() {
-        // ExtensionList<IKeyHubCommunicationService> extensionList = ExtensionList
-        // .lookup(IKeyHubCommunicationService.class);
-        // KeyHubCommunicationService realService =
-        // extensionList.get(KeyHubCommunicationService.class);
-        // extensionList.remove(realService);
-
-        // IKeyHubCommunicationService keyHubCommunicationServiceStub = ExtensionList
-        // .lookup(IKeyHubCommunicationService.class).get(IKeyHubCommunicationService.class);
-
-        //spyCommunicationService = spy(new KeyHubCommunicationService());
-    }
+    @Rule
+    public final JenkinsRule jenkins = new JenkinsRule();
 
     @Test
     public void fetchCredentialsTest() throws Exception {
         // Arrange
-        IKeyHubCommunicationService spyCommunicationService = PowerMockito.mock(new KeyHubCommunicationService());
-        ClientCredentials clientCredentials = new ClientCredentials("testId", Secret.fromString("testSecret"));
-        Collection<KeyHubUsernamePasswordCredentials> result;
+        KeyHubGroup testGroup = new KeyHubGroup();
+        testGroup.setName("testKeyHubGroup");
+        List<KeyHubGroup> testKeyHubGroupList = new ArrayList<>(Arrays.asList(testGroup));
+
+        KeyHubVaultRecord testRecord = new KeyHubVaultRecord();
+        testRecord.setName("testKeyHubRecord");
+        List<KeyHubVaultRecord> testKeyHubRecordList = new ArrayList<>(Arrays.asList(testRecord));
+
+        Secret testSecret = Secret.fromString("testSecret");
+        ClientCredentials testClientCredentials = new ClientCredentials("testId", testSecret);
+        VaultAccessor mockedVaultAccessor = mock(VaultAccessor.class);
+
+        PowerMockito.whenNew(VaultAccessor.class).withArguments(eq(testClientCredentials), anyString(),
+                any(RestClientBuilder.class), any(KeyHubTokenResponse.class)).thenReturn(mockedVaultAccessor);
+        IKeyHubCommunicationService communicationService = new KeyHubCommunicationService();
+
+        when(communicationService, "getKeyHubURI").thenReturn(null);
+
+        when(mockedVaultAccessor.fetchGroupData()).thenReturn(testKeyHubGroupList);
+        when(mockedVaultAccessor.fetchRecordsFromVault(anyList())).thenReturn(testKeyHubRecordList);
 
         // Act
-        // PowerMockito.doReturn(null).when(spyCommunicationService, "getKeyHubURI");
-        PowerMockito.when(spyCommunicationService, "getKeyHubURI").thenReturn(null);
-        result = spyCommunicationService.fetchCredentials(clientCredentials);
+        Collection<KeyHubUsernamePasswordCredentials> result = communicationService
+                .fetchCredentials(testClientCredentials);
 
         // Assert
-        assertEquals(Collections.emptyList(), result);
+        System.out.println(result.stream());
+
     }
 
     @Test
     public void fetchRecordSecretTest() {
-
+        assertEquals("", "");
     }
 
 }

@@ -21,7 +21,7 @@ import hudson.model.ItemGroup;
 import hudson.security.ACL;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ ExtensionList.class })
+@PrepareForTest({ KeyHubCredentialsProvider.class })
 public class KeyHubCredentialsProviderTest {
 
     private ItemGroup<?> itemGroup;

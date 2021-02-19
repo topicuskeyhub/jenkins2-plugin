@@ -33,7 +33,12 @@ public class GlobalPluginConfigurationTest {
     @Rule
     public final JenkinsRule jenkins = new JenkinsRule();
 
-    private CredentialsStore store;
+    //private CredentialsStore store;
+
+    @Test
+    public void blankTest() {
+        assertEquals("","");
+    }
 
 
 }
