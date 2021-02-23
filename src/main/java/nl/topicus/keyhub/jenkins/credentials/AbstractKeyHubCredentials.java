@@ -24,11 +24,15 @@ import hudson.util.Secret;
 public abstract class AbstractKeyHubCredentials extends BaseStandardCredentials {
 
     private static final long serialVersionUID = 1L;
+    private final String id;
+    private final String description;
     private final String href;
     private final String username;
 
     protected AbstractKeyHubCredentials(String id, String description, String href, String username) {
         super(id, description);
+        this.id = id;
+        this.description = description;
         this.href = href;
         this.username = username;
     }
