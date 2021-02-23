@@ -1,6 +1,7 @@
 package nl.topicus.keyhub.jenkins.vault;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Answers.valueOf;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -13,11 +14,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import java.util.Optional;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -25,13 +29,14 @@ import hudson.util.Secret;
 import nl.topicus.keyhub.jenkins.credentials.username_password.KeyHubUsernamePasswordCredentials;
 import nl.topicus.keyhub.jenkins.model.ClientCredentials;
 import nl.topicus.keyhub.jenkins.model.response.KeyHubTokenResponse;
+import nl.topicus.keyhub.jenkins.model.response.Link;
 import nl.topicus.keyhub.jenkins.model.response.group.KeyHubGroup;
 import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
 
-// @RunWith(PowerMockRunner.class)
+@RunWith(PowerMockRunner.class)
 @PrepareForTest(KeyHubCommunicationService.class)
-// @PowerMockIgnore({ "javax.net.ssl.*", "javax.management.*",
-// "javax.crypto.JceSecurity.*", "javax.crypto.*" })
+@PowerMockIgnore({ "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*", "javax.management.*", "javax.crypto.*",
+        "javax.net.ssl.*" })
 public class KeyHubCommunicationServiceTest {
 
     @Rule
@@ -44,19 +49,38 @@ public class KeyHubCommunicationServiceTest {
         testGroup.setName("testKeyHubGroup");
         List<KeyHubGroup> testKeyHubGroupList = new ArrayList<>(Arrays.asList(testGroup));
 
+        Link testLink = new Link();
+        testLink.setHref("www.testHref.com");
+        List<Link> testLinkList = new ArrayList<>(Arrays.asList(testLink));
+
         KeyHubVaultRecord testRecord = new KeyHubVaultRecord();
+        testRecord.setLinks(testLinkList);
+        testRecord.setUUID("testRecordUUID");
         testRecord.setName("testKeyHubRecord");
+        testRecord.setUsername("testRecordUsername");
+        
         List<KeyHubVaultRecord> testKeyHubRecordList = new ArrayList<>(Arrays.asList(testRecord));
 
         Secret testSecret = Secret.fromString("testSecret");
         ClientCredentials testClientCredentials = new ClientCredentials("testId", testSecret);
-        VaultAccessor mockedVaultAccessor = mock(VaultAccessor.class);
+        IVaultAccessor mockedVaultAccessor = mock(VaultAccessor.class);
 
-        PowerMockito.whenNew(VaultAccessor.class).withArguments(eq(testClientCredentials), anyString(),
-                any(RestClientBuilder.class), any(KeyHubTokenResponse.class)).thenReturn(mockedVaultAccessor);
-        IKeyHubCommunicationService communicationService = new KeyHubCommunicationService();
+        IKeyHubCommunicationService communicationService = new KeyHubCommunicationService() {
+            @Override
+            protected Optional<String> getKeyHubURI() {
+                return Optional.of("https://keyhub.topicusonderwijs.nl");
+            }
 
-        when(communicationService, "getKeyHubURI").thenReturn(null);
+            @Override
+            protected KeyHubTokenResponse getTokenForClient(ClientCredentials credentials) {
+                return new KeyHubTokenResponse();
+            }
+
+            @Override
+            protected IVaultAccessor createVaultAccessor(ClientCredentials clientCredentials, Optional<String> keyhubURI) {
+                return mockedVaultAccessor;
+            }
+        };
 
         when(mockedVaultAccessor.fetchGroupData()).thenReturn(testKeyHubGroupList);
         when(mockedVaultAccessor.fetchRecordsFromVault(anyList())).thenReturn(testKeyHubRecordList);
@@ -66,7 +90,10 @@ public class KeyHubCommunicationServiceTest {
                 .fetchCredentials(testClientCredentials);
 
         // Assert
-        System.out.println(result.stream());
+        assertEquals("testRecordUUID", result.iterator().next().getId());
+        assertEquals("testKeyHubRecord", result.iterator().next().getDescription());
+        assertEquals("www.testHref.com", result.iterator().next().getHref());
+        assertEquals("testRecordUsername", result.iterator().next().getUsername());
 
     }
 

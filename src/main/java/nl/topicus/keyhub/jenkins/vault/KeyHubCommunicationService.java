@@ -82,7 +82,7 @@ public class KeyHubCommunicationService implements IKeyHubCommunicationService, 
         return keyhubToken;
     }
 
-    private KeyHubTokenResponse getTokenForClient(ClientCredentials credentials) {
+    protected KeyHubTokenResponse getTokenForClient(ClientCredentials credentials) {
         return currentClientIdWithTokens.compute(credentials.getClientId(),
                 (clientId, token) -> fetchAuthenticationTokenIfNeeded(credentials, token));
     }
@@ -92,8 +92,7 @@ public class KeyHubCommunicationService implements IKeyHubCommunicationService, 
         if (!keyhubURI.isPresent()) {
             return Collections.emptyList();
         }
-        VaultAccessor vaultAccessor = new VaultAccessor(clientCredentials, keyhubURI.get(), restClientBuilder,
-                getTokenForClient(clientCredentials));
+        IVaultAccessor vaultAccessor = createVaultAccessor(clientCredentials, keyhubURI);
         List<KeyHubUsernamePasswordCredentials> jRecords = new ArrayList<>();
         try {
             List<KeyHubGroup> khGroups = vaultAccessor.fetchGroupData();
@@ -115,6 +114,11 @@ public class KeyHubCommunicationService implements IKeyHubCommunicationService, 
         return Collections.emptyList();
     }
 
+    protected IVaultAccessor createVaultAccessor(ClientCredentials clientCredentials, Optional<String> keyhubURI) {
+        return new VaultAccessor(clientCredentials, keyhubURI.get(), restClientBuilder,
+                getTokenForClient(clientCredentials));
+    }
+
     public KeyHubVaultRecord fetchRecordSecret(ClientCredentials clientCredentials, String href) {
         String keyhubURI = getKeyHubURI().get();
         VaultAccessor vaultAccessor = new VaultAccessor(clientCredentials, keyhubURI, restClientBuilder,
@@ -123,7 +127,7 @@ public class KeyHubCommunicationService implements IKeyHubCommunicationService, 
         return vaultAccessor.fetchRecordSecret(href);
     }
 
-    private Optional<String> getKeyHubURI() {
+    protected Optional<String> getKeyHubURI() {
         return Optional.ofNullable(
                 Strings.emptyToNull(ExtensionList.lookupSingleton(GlobalPluginConfiguration.class).getKeyhubURI()));
     }
