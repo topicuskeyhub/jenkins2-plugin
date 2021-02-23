@@ -1,11 +1,7 @@
 package nl.topicus.keyhub.jenkins.vault;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Answers.valueOf;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
 
@@ -13,17 +9,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-
 import java.util.Optional;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import hudson.util.Secret;
 import nl.topicus.keyhub.jenkins.credentials.username_password.KeyHubUsernamePasswordCredentials;
@@ -33,10 +23,6 @@ import nl.topicus.keyhub.jenkins.model.response.Link;
 import nl.topicus.keyhub.jenkins.model.response.group.KeyHubGroup;
 import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(KeyHubCommunicationService.class)
-@PowerMockIgnore({ "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*", "javax.management.*", "javax.crypto.*",
-        "javax.net.ssl.*" })
 public class KeyHubCommunicationServiceTest {
 
     @Rule
@@ -58,7 +44,7 @@ public class KeyHubCommunicationServiceTest {
         testRecord.setUUID("testRecordUUID");
         testRecord.setName("testKeyHubRecord");
         testRecord.setUsername("testRecordUsername");
-        
+
         List<KeyHubVaultRecord> testKeyHubRecordList = new ArrayList<>(Arrays.asList(testRecord));
 
         Secret testSecret = Secret.fromString("testSecret");
@@ -77,7 +63,8 @@ public class KeyHubCommunicationServiceTest {
             }
 
             @Override
-            protected IVaultAccessor createVaultAccessor(ClientCredentials clientCredentials, Optional<String> keyhubURI) {
+            protected IVaultAccessor createVaultAccessor(ClientCredentials clientCredentials,
+                    Optional<String> keyhubURI) {
                 return mockedVaultAccessor;
             }
         };
