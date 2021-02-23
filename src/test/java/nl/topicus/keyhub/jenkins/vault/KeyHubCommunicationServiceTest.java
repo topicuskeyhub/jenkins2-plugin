@@ -13,7 +13,6 @@ import java.util.Optional;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
 
 import hudson.util.Secret;
 import nl.topicus.keyhub.jenkins.credentials.username_password.KeyHubUsernamePasswordCredentials;
@@ -24,9 +23,6 @@ import nl.topicus.keyhub.jenkins.model.response.group.KeyHubGroup;
 import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
 
 public class KeyHubCommunicationServiceTest {
-
-    @Rule
-    public final JenkinsRule jenkins = new JenkinsRule();
 
     @Test
     public void fetchCredentialsTest() throws Exception {
