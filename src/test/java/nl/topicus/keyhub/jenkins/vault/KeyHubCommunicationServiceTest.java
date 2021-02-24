@@ -82,7 +82,12 @@ public class KeyHubCommunicationServiceTest {
 
     @Test
     public void fetchRecordSecretTest() {
-        assertEquals("", "");
+        //Arrange
+        IVaultAccessor mockedVaultAccessor = mock(VaultAccessor.class);
+        
+        //Act
+
+        //Assert
     }
 
 }
