@@ -92,7 +92,7 @@ public class KeyHubCommunicationService implements IKeyHubCommunicationService, 
         if (!keyhubURI.isPresent()) {
             return Collections.emptyList();
         }
-        IVaultAccessor vaultAccessor = createVaultAccessor(clientCredentials, keyhubURI);
+        IVaultAccessor vaultAccessor = createVaultAccessor(clientCredentials);
         List<KeyHubUsernamePasswordCredentials> jRecords = new ArrayList<>();
         try {
             List<KeyHubGroup> khGroups = vaultAccessor.fetchGroupData();
@@ -114,16 +114,13 @@ public class KeyHubCommunicationService implements IKeyHubCommunicationService, 
         return Collections.emptyList();
     }
 
-    protected IVaultAccessor createVaultAccessor(ClientCredentials clientCredentials, Optional<String> keyhubURI) {
-        return new VaultAccessor(clientCredentials, keyhubURI.get(), restClientBuilder,
+    protected IVaultAccessor createVaultAccessor(ClientCredentials clientCredentials) {
+        return new VaultAccessor(clientCredentials, this.getKeyHubURI().orElse(""), restClientBuilder,
                 getTokenForClient(clientCredentials));
     }
 
     public KeyHubVaultRecord fetchRecordSecret(ClientCredentials clientCredentials, String href) {
-        String keyhubURI = getKeyHubURI().get();
-        VaultAccessor vaultAccessor = new VaultAccessor(clientCredentials, keyhubURI, restClientBuilder,
-                getTokenForClient(clientCredentials));
-
+        IVaultAccessor vaultAccessor = createVaultAccessor(clientCredentials);
         return vaultAccessor.fetchRecordSecret(href);
     }
 

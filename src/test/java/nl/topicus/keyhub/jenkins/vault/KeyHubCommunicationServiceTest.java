@@ -59,8 +59,7 @@ public class KeyHubCommunicationServiceTest {
             }
 
             @Override
-            protected IVaultAccessor createVaultAccessor(ClientCredentials clientCredentials,
-                    Optional<String> keyhubURI) {
+            protected IVaultAccessor createVaultAccessor(ClientCredentials clientCredentials) {
                 return mockedVaultAccessor;
             }
         };
