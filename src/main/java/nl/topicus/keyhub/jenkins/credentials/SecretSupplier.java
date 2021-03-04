@@ -22,15 +22,15 @@ import java.util.function.Supplier;
 import hudson.util.Secret;
 import nl.topicus.keyhub.jenkins.model.ClientCredentials;
 import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
-import nl.topicus.keyhub.jenkins.vault.KeyHubCommunicationService;
+import nl.topicus.keyhub.jenkins.vault.IKeyHubCommunicationService;
 
 public class SecretSupplier implements Supplier<Secret> {
 
-    private transient KeyHubCommunicationService keyhubCommunicationService;
+    private transient IKeyHubCommunicationService keyhubCommunicationService;
     private ClientCredentials clientCredentials;
     private String href;
 
-    public SecretSupplier(KeyHubCommunicationService keyhubCommunicationsService, ClientCredentials clientCredentials,
+    public SecretSupplier(IKeyHubCommunicationService keyhubCommunicationsService, ClientCredentials clientCredentials,
             String href) {
         this.keyhubCommunicationService = keyhubCommunicationsService;
         this.clientCredentials = clientCredentials;
