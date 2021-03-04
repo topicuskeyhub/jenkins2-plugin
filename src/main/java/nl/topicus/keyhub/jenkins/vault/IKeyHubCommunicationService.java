@@ -19,11 +19,12 @@ package nl.topicus.keyhub.jenkins.vault;
 
 import java.util.Collection;
 
+import hudson.ExtensionPoint;
 import nl.topicus.keyhub.jenkins.credentials.username_password.KeyHubUsernamePasswordCredentials;
 import nl.topicus.keyhub.jenkins.model.ClientCredentials;
 import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
 
-public interface IKeyHubCommunicationService {
+public interface IKeyHubCommunicationService extends ExtensionPoint {
 
     public Collection<KeyHubUsernamePasswordCredentials> fetchCredentials(ClientCredentials clientCredentials);
 
