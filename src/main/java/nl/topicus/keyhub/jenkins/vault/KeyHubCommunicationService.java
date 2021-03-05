@@ -41,7 +41,6 @@ import org.jboss.resteasy.client.jaxrs.internal.BasicAuthentication;
 
 import hudson.Extension;
 import hudson.ExtensionList;
-import hudson.ExtensionPoint;
 import hudson.util.Secret;
 import nl.topicus.keyhub.jenkins.configuration.GlobalPluginConfiguration;
 import nl.topicus.keyhub.jenkins.credentials.SecretSupplier;
@@ -52,7 +51,7 @@ import nl.topicus.keyhub.jenkins.model.response.group.KeyHubGroup;
 import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
 
 @Extension
-public class KeyHubCommunicationService implements IKeyHubCommunicationService, ExtensionPoint {
+public class KeyHubCommunicationService implements IKeyHubCommunicationService {
 
     private static final Logger LOG = Logger.getLogger(KeyHubCommunicationService.class.getName());
     private RestClientBuilder restClientBuilder = new RestClientBuilder();
