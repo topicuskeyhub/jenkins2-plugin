@@ -23,7 +23,6 @@ import hudson.util.Secret;
 import nl.topicus.keyhub.jenkins.model.ClientCredentials;
 import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
 import nl.topicus.keyhub.jenkins.vault.IKeyHubCommunicationService;
-import nl.topicus.keyhub.jenkins.vault.KeyHubCommunicationService;
 
 public class SecretSupplier implements Supplier<Secret> {
 
