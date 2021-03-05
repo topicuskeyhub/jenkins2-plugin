@@ -1,15 +1,18 @@
 package nl.topicus.keyhub.jenkins.credentials.username_password;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.function.Supplier;
 
 import org.junit.Test;
 
 import hudson.util.Secret;
-import nl.topicus.keyhub.jenkins.credentials.SecretSupplier;
-import nl.topicus.keyhub.jenkins.model.ClientCredentials;
-import nl.topicus.keyhub.jenkins.vault.IKeyHubCommunicationService;
-import nl.topicus.keyhub.jenkins.vault.KeyHubCommunicationService;
 
 public class KeyHubUsernamePasswordCredentialsSnapshotTakerTest {
 
@@ -17,19 +20,24 @@ public class KeyHubUsernamePasswordCredentialsSnapshotTakerTest {
     public void KeyHubUsernameSnapshotTest() {
         // Arrange
         KeyHubUsernamePasswordCredentialsSnapshotTaker snapshotTaker = new KeyHubUsernamePasswordCredentialsSnapshotTaker();
-        IKeyHubCommunicationService mockService = mock(KeyHubCommunicationService.class);
-        ClientCredentials testClientCredentials = new ClientCredentials("testId", Secret.fromString("testSecret"));
+        Secret testSecret = Secret.fromString("testSecret");
+        Supplier<Secret> mockedSecretSupplier1 = mock(Supplier.class);
+
         KeyHubUsernamePasswordCredentials testCredential = KeyHubUsernamePasswordCredentials.KeyHubCredentialsBuilder
                 .newInstance().id("testId").recordName("testName").href("testHref").username("testUsername")
-                .password(new SecretSupplier(mockService, testClientCredentials, "testHref")).build();
+                .password(mockedSecretSupplier1).build();
 
+        when(mockedSecretSupplier1.get()).thenReturn(testSecret);
+        
         // Act
-        // KeyHubUsernamePasswordCredentials usernamePasswordCredential =
-        // snapshotTaker.snapshot(testCredential);
+        KeyHubUsernamePasswordCredentials usernamePasswordCredentialSnapshot = snapshotTaker.snapshot(testCredential);
+        usernamePasswordCredentialSnapshot.getPassword(); // Additional calls to prove that the snapshot is actually a snapshot.
+        usernamePasswordCredentialSnapshot.getPassword();
 
         // Assert
-        // assertEquals(testCredential, usernamePasswordCredential);
-
+        assertNotSame(testCredential, usernamePasswordCredentialSnapshot);
+        assertEquals(testSecret, usernamePasswordCredentialSnapshot.getPassword());
+        verify(mockedSecretSupplier1, times(1)).get();
     }
 
 }
