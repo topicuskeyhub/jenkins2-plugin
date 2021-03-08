@@ -68,7 +68,7 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
     }
 
     public <C extends Credentials> List<C> getCredentialsForItemGroup(Class<C> type, ItemGroup itemGroup) {
-        List<C> result = new ArrayList<>();
+        List<C> credentials = new ArrayList<>();
         if (itemGroup instanceof AbstractFolder) {
             final AbstractFolder<?> folder = AbstractFolder.class.cast(itemGroup);
             FolderKeyHubClientConfiguration property = Optional
@@ -83,11 +83,11 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
             }
             Collection<KeyHubUsernamePasswordCredentials> khUsernamePasswordCredentials = getKeyHubCommunicationService()
                     .fetchCredentials(folderClientCredentials);
-            for (KeyHubUsernamePasswordCredentials credentials : khUsernamePasswordCredentials) {
-                result.add(type.cast(credentials));
+            for (KeyHubUsernamePasswordCredentials usernamePasswordCredentials : khUsernamePasswordCredentials) {
+                credentials.add(type.cast(usernamePasswordCredentials));
             }
         }
-        return result;
+        return credentials;
     }
 
     public IKeyHubCommunicationService getKeyHubCommunicationService() {
