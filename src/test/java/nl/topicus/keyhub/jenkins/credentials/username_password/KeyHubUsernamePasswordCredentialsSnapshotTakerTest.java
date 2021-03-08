@@ -28,10 +28,11 @@ public class KeyHubUsernamePasswordCredentialsSnapshotTakerTest {
                 .password(mockedSecretSupplier1).build();
 
         when(mockedSecretSupplier1.get()).thenReturn(testSecret);
-        
+
         // Act
         KeyHubUsernamePasswordCredentials usernamePasswordCredentialSnapshot = snapshotTaker.snapshot(testCredential);
-        usernamePasswordCredentialSnapshot.getPassword(); // Additional calls to prove that the snapshot is actually a snapshot.
+        usernamePasswordCredentialSnapshot.getPassword(); // Additional calls to prove that the snapshot is actually a
+                                                          // snapshot.
         usernamePasswordCredentialSnapshot.getPassword();
 
         // Assert
