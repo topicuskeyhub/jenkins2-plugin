@@ -2,8 +2,9 @@ package nl.topicus.keyhub.jenkins.vault;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,7 +12,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Rule;
 import org.junit.Test;
 
 import hudson.util.Secret;
@@ -20,7 +20,9 @@ import nl.topicus.keyhub.jenkins.model.ClientCredentials;
 import nl.topicus.keyhub.jenkins.model.response.KeyHubTokenResponse;
 import nl.topicus.keyhub.jenkins.model.response.Link;
 import nl.topicus.keyhub.jenkins.model.response.group.KeyHubGroup;
+import nl.topicus.keyhub.jenkins.model.response.record.AdditionalObjectsOfVaultRecord;
 import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
+import nl.topicus.keyhub.jenkins.model.response.record.RecordSecret;
 
 public class KeyHubCommunicationServiceTest {
 
@@ -81,7 +83,35 @@ public class KeyHubCommunicationServiceTest {
 
     @Test
     public void fetchRecordSecretTest() {
-        assertEquals("", "");
+        //Arrange
+        IVaultAccessor mockedVaultAccessor = mock(VaultAccessor.class);
+        IKeyHubCommunicationService communicationService = new KeyHubCommunicationService() {
+            @Override
+            protected Optional<String> getKeyHubURI() {
+                return Optional.of("https://keyhub.topicusonderwijs.nl");
+            }
+
+            @Override
+            protected IVaultAccessor createVaultAccessor(ClientCredentials clientCredentials) {
+                return mockedVaultAccessor;
+            }
+        };
+        KeyHubVaultRecord testRecord = new KeyHubVaultRecord();
+        AdditionalObjectsOfVaultRecord additionalObjects = new AdditionalObjectsOfVaultRecord();
+        RecordSecret testRecordSecret = new RecordSecret();
+        testRecord.setAdditionalObjects(additionalObjects);
+        testRecordSecret.setPassword(Secret.fromString("testSecret"));
+        additionalObjects.setSecret(testRecordSecret);
+
+        ClientCredentials testClientCredentials = new ClientCredentials("testId", Secret.fromString("testSecret"));
+
+        when(mockedVaultAccessor.fetchRecordSecret(anyString())).thenReturn(testRecord);
+
+        //Act
+        KeyHubVaultRecord record = communicationService.fetchRecordSecret(testClientCredentials, "testHref");
+
+        //Assert
+        assertEquals("testSecret", record.getAdditionalObjects().getSecret().getPassword().getPlainText());
     }
 
 }

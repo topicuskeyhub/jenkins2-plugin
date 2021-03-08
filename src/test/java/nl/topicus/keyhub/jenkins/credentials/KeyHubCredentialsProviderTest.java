@@ -1,9 +1,26 @@
 package nl.topicus.keyhub.jenkins.credentials;
 
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+
+import java.util.List;
+
+import com.cloudbees.hudson.plugins.folder.AbstractFolder;
+import com.cloudbees.hudson.plugins.folder.Folder;
+import com.cloudbees.plugins.credentials.Credentials;
+
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+
+import hudson.model.ItemGroup;
+import hudson.security.ACL;
 
 public class KeyHubCredentialsProviderTest {
+
+    @Rule
+    public JenkinsRule jenkinsRule = new JenkinsRule();
 
     @Before
     public void setUp() {
@@ -11,13 +28,29 @@ public class KeyHubCredentialsProviderTest {
     }
 
     @Test
-    public void getCredentialsTestItemGroupNull() {
+    public void getCredentialsNoPermissionsTest() {
+        // Arrange
+        KeyHubCredentialsProvider provider = new KeyHubCredentialsProvider();
+        ItemGroup mockedItemGroup = mock(ItemGroup.class);
 
+        // Act
+        List<Credentials> credentials = provider.getCredentials(Credentials.class, mockedItemGroup, null);
+
+        // Assert
+        assertTrue(credentials.isEmpty());
     }
 
     @Test
-    public void getCredentialsTestNotAuthenticatedReturnsEmptyList() {
+    public void getCredentialsWithPermissionsButEmptyItemGroup() {
+        // Arrange
+        KeyHubCredentialsProvider provider = new KeyHubCredentialsProvider();
+        ItemGroup<AbstractFolder<?>> mockedItemGroup = mock(ItemGroup.class);
 
+        // Act
+        List<Credentials> credentials = provider.getCredentials(Credentials.class, mockedItemGroup, jenkinsRule.jenkins.getAuthentication());
+
+        // Assert
+        assertTrue(credentials.isEmpty());
     }
 
 }
