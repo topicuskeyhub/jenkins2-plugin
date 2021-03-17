@@ -6,7 +6,6 @@ import static org.mockito.Mockito.mock;
 import java.util.List;
 
 import com.cloudbees.hudson.plugins.folder.AbstractFolder;
-import com.cloudbees.hudson.plugins.folder.Folder;
 import com.cloudbees.plugins.credentials.Credentials;
 
 import org.junit.Before;
@@ -15,7 +14,6 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import hudson.model.ItemGroup;
-import hudson.security.ACL;
 
 public class KeyHubCredentialsProviderTest {
 

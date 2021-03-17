@@ -20,12 +20,4 @@ public class KeyHubCredentialsBuilderTest {
         assertEquals("testHref", builtCredentials.getHref());
     }
 
-    /*
-     * KeyHubUsernamePasswordCredentials.KeyHubCredentialsBuilder.newInstance()
-     * .id(khRecords.get(i).getUUID()).recordName(khRecords.get(i).getName())
-     * .href(khRecords.get(i).getHref()).username(khRecords.get(i).getUsername())
-     * .password(new SecretSupplier(vaultAccessor,
-     * khRecords.get(i).getHref())).build()
-     */
-
 }
