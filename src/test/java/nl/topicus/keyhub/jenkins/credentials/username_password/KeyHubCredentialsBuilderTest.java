@@ -9,9 +9,11 @@ public class KeyHubCredentialsBuilderTest {
     @Test
     public void builtKeyHubUsernameCredentialsCorrectly() {
         // Arrange
-        KeyHubUsernamePasswordCredentials builtCredentials = KeyHubUsernamePasswordCredentials.KeyHubCredentialsBuilder.newInstance().
-        id("123-testId").recordName("testRecordName").href("testHref").username("testUsername").password(null).build();
+        KeyHubUsernamePasswordCredentials builtCredentials;
 
+        // Act
+        builtCredentials = KeyHubUsernamePasswordCredentials.KeyHubCredentialsBuilder.newInstance().id("123-testId")
+                .recordName("testRecordName").href("testHref").username("testUsername").password(null).build();
 
         // Assert
         builtCredentials.getHref();
