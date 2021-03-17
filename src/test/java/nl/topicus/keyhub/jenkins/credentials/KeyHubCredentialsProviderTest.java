@@ -20,11 +20,6 @@ public class KeyHubCredentialsProviderTest {
     @Rule
     public JenkinsRule jenkinsRule = new JenkinsRule();
 
-    @Before
-    public void setUp() {
-
-    }
-
     @Test
     public void getCredentialsNoPermissionsTest() {
         // Arrange
