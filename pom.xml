@@ -30,15 +30,7 @@
     <build>
         <pluginManagement>
             <plugins>
-                <!-- <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <configuration>
-                        <excludes>
-                            <exclude>**/KeyHubCommunicationServiceIntegration.java</exclude>
-                        </excludes>
-                    </configuration>
-                </plugin> -->
+
                 <plugin>
                     <groupId>com.github.spotbugs</groupId>
                     <artifactId>spotbugs-maven-plugin</artifactId>
@@ -215,7 +207,7 @@
                             <artifactId>maven-surefire-plugin</artifactId>
                             <configuration>
                                 <excludes>
-                                    <exclude>**/KeyHubCommunicationServiceIntegration.java</exclude>
+                                    <exclude>**/KeyHubCommunicationServiceIntegrationTest.java</exclude>
                                 </excludes>
                             </configuration>
                         </plugin>
