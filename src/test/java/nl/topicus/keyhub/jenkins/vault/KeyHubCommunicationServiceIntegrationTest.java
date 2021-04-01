@@ -21,39 +21,36 @@ import nl.topicus.keyhub.jenkins.model.ClientCredentials;
 
 public class KeyHubCommunicationServiceIntegrationTest {
 
-    public String globalKeyHubURI = "https://keyhub.topicusonderwijs.nl";
+        public String globalKeyHubURI = "https://keyhub.topicusonderwijs.nl";
 
-    @Rule
-    public JenkinsRule jenkins = new JenkinsRule();
+        @Rule
+        public JenkinsRule jenkins = new JenkinsRule();
 
-    @Test
-    public void getCredentialsFromKeyHubVault() {
-        // Arrange
-        IKeyHubCommunicationService communicationService = new KeyHubCommunicationService();
-        ClientCredentials testClientCredentials = new ClientCredentials(System.getenv("CLIENT_ID"),
-                Secret.fromString(System.getenv("CLIENT_SECRET")));
-        List<KeyHubUsernamePasswordCredentials> retrievedCredentials = new ArrayList<>();
-        jenkins.getInstance().getExtensionList(GlobalPluginConfiguration.class).get(0).setKeyhubURI(globalKeyHubURI);
+        @Test
+        public void getCredentialsFromKeyHubVault() {
+                // Arrange
+                IKeyHubCommunicationService communicationService = new KeyHubCommunicationService();
+                ClientCredentials testClientCredentials = new ClientCredentials(System.getenv("CLIENT_ID"),
+                                Secret.fromString(System.getenv("CLIENT_SECRET")));
+                List<KeyHubUsernamePasswordCredentials> retrievedCredentials = new ArrayList<>();
+                jenkins.getInstance().getExtensionList(GlobalPluginConfiguration.class).get(0)
+                                .setKeyhubURI(globalKeyHubURI);
 
-        // Act
-        Collection<KeyHubUsernamePasswordCredentials> credentials = communicationService
-                .fetchCredentials(testClientCredentials);
-        for (KeyHubUsernamePasswordCredentials credential : credentials) {
-            System.out.println(credential.getDescription());
-            retrievedCredentials.add(credential);
+                // Act
+                Collection<KeyHubUsernamePasswordCredentials> credentials = communicationService
+                                .fetchCredentials(testClientCredentials);
+                for (KeyHubUsernamePasswordCredentials credential : credentials) {
+                        retrievedCredentials.add(credential);
+                }
+
+                // Assert
+                assertEquals("Demo Record 3_IT", retrievedCredentials.get(1).getDescription());
+                assertEquals("Demo Record 1_IT", retrievedCredentials.get(2).getDescription());
+                assertEquals("Demo Record 2_IT", retrievedCredentials.get(3).getDescription());
+                assertThat(communicationService
+                                .fetchRecordSecret(testClientCredentials, retrievedCredentials.get(0).getHref())
+                                .getAdditionalObjects().getSecret().getPassword().getPlainText(),
+                                is(not(emptyOrNullString())));
         }
-
-        System.out.println("Record Secret: "
-                + communicationService.fetchRecordSecret(testClientCredentials, retrievedCredentials.get(0).getHref())
-                        .getAdditionalObjects().getSecret().getPassword().getPlainText());
-
-        // Assert
-        assertEquals("Demo Record 3_IT", retrievedCredentials.get(1).getDescription());
-        assertEquals("Demo Record 1_IT", retrievedCredentials.get(2).getDescription());
-        assertEquals("Demo Record 2_IT", retrievedCredentials.get(3).getDescription());
-        assertThat(communicationService.fetchRecordSecret(testClientCredentials, retrievedCredentials.get(0).getHref())
-                .getAdditionalObjects().getSecret().getPassword().getPlainText(), is(not(emptyOrNullString())));
-
-    }
 
 }
