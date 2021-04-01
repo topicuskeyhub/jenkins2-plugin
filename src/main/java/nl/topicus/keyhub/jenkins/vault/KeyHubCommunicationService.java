@@ -89,6 +89,7 @@ public class KeyHubCommunicationService implements IKeyHubCommunicationService {
     public Collection<KeyHubUsernamePasswordCredentials> fetchCredentials(ClientCredentials clientCredentials) {
         Optional<String> keyhubURI = getKeyHubURI();
         if (!keyhubURI.isPresent()) {
+            LOG.log(Level.WARNING, "The KeyHub URI is not present which will present you with no output.");
             return Collections.emptyList();
         }
         IVaultAccessor vaultAccessor = createVaultAccessor(clientCredentials);
