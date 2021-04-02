@@ -40,8 +40,6 @@ public class KeyHubCommunicationServiceIntegrationTest {
                                 .setKeyhubURI(globalKeyHubURI);
 
                 // Act
-                LOG.log(Level.WARNING, "Client ID : " + testClientCredentials.getClientId());
-                System.out.println("Client ID : " + testClientCredentials.getClientId());
                 Collection<KeyHubUsernamePasswordCredentials> credentials = communicationService
                                 .fetchCredentials(testClientCredentials);
                 for (KeyHubUsernamePasswordCredentials credential : credentials) {
