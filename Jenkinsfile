@@ -11,7 +11,7 @@ node {
 
     catchError {
         stage("Build") {
-			withCredentials([usernamePassword(credentialsId: '2c2c8566-5ee8-4b0e-84af-74c588766f75', usernameVariable: 'CLIENT_ID', passwordVariable: 'CLIENT_SECRET')]) {
+			withCredentials([usernamePassword(credentialsId: '2c438487-0a77-49ad-9d14-82093d1a9c7f', usernameVariable: 'CLIENT_ID', passwordVariable: 'CLIENT_SECRET')]) {
 	            maven {
     	        }
 			}
