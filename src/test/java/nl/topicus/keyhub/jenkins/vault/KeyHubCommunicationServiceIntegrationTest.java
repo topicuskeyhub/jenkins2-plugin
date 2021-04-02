@@ -9,6 +9,8 @@ import static org.junit.Assert.assertThat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -22,6 +24,7 @@ import nl.topicus.keyhub.jenkins.model.ClientCredentials;
 public class KeyHubCommunicationServiceIntegrationTest {
 
         public String globalKeyHubURI = "https://keyhub.topicusonderwijs.nl";
+        private static final Logger LOG = Logger.getLogger(KeyHubCommunicationServiceIntegrationTest.class.getName());
 
         @Rule
         public JenkinsRule jenkins = new JenkinsRule();
@@ -37,9 +40,10 @@ public class KeyHubCommunicationServiceIntegrationTest {
                                 .setKeyhubURI(globalKeyHubURI);
 
                 // Act
+                LOG.log(Level.WARNING, "Client ID : " + testClientCredentials.getClientId());
+                System.out.println("Client ID : " + testClientCredentials.getClientId());
                 Collection<KeyHubUsernamePasswordCredentials> credentials = communicationService
                                 .fetchCredentials(testClientCredentials);
-                System.out.println("Client ID: " + testClientCredentials.getClientId());
                 for (KeyHubUsernamePasswordCredentials credential : credentials) {
                         retrievedCredentials.add(credential);
                 }
