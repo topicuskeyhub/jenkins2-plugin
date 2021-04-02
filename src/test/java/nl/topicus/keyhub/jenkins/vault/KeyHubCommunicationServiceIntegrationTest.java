@@ -39,6 +39,7 @@ public class KeyHubCommunicationServiceIntegrationTest {
                 // Act
                 Collection<KeyHubUsernamePasswordCredentials> credentials = communicationService
                                 .fetchCredentials(testClientCredentials);
+                System.out.println("Client ID: " + testClientCredentials.getClientId());
                 for (KeyHubUsernamePasswordCredentials credential : credentials) {
                         retrievedCredentials.add(credential);
                 }
