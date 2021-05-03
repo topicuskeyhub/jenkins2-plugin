@@ -2,13 +2,15 @@
 
 ## Introduction
 
-TODO Describe what your plugin does here
+This plugin allows using KeyHub vault credentials in Jenkins builds.
 
 ## Getting started
 
-TODO Tell users how to configure your plugin here, include screenshots, pipeline examples and 
-configuration-as-code examples.
+The KeyHub URI has to be filled into the Global Settings of Jenkins.
 
+Fill in the KeyHub client details in a Jenkins folder. The credentials which the KeyHub
+client has access to will be displayed in the "credentials" section of Jenkins. These will be
+ready to use for Jenkins builds in the configured folder and it's children.
 
 ## Contributing
 
