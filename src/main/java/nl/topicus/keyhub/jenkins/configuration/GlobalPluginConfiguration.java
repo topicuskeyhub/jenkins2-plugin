@@ -20,10 +20,11 @@ package nl.topicus.keyhub.jenkins.configuration;
 import org.kohsuke.stapler.DataBoundSetter;
 
 import hudson.Extension;
+import hudson.model.PersistentDescriptor;
 import jenkins.model.GlobalConfiguration;
 
 @Extension
-public class GlobalPluginConfiguration extends GlobalConfiguration {
+public class GlobalPluginConfiguration extends GlobalConfiguration implements PersistentDescriptor {
 
     private String keyhubURI;
 
@@ -46,5 +47,6 @@ public class GlobalPluginConfiguration extends GlobalConfiguration {
     @DataBoundSetter
     public void setKeyhubURI(String keyhubURI) {
         this.keyhubURI = keyhubURI;
+        save();
     }
 }
