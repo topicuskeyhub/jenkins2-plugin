@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import com.cloudbees.hudson.plugins.folder.AbstractFolder;
 import com.cloudbees.plugins.credentials.Credentials;
@@ -46,6 +47,8 @@ import nl.topicus.keyhub.jenkins.vault.IKeyHubCommunicationService;
 @Extension
 public class KeyHubCredentialsProvider extends CredentialsProvider {
 
+	private static final Set<Class<? extends Credentials>> SUPPORTED_CREDENTIALS = Set.of(KeyHubUsernamePasswordCredentials.class);
+	
     @SuppressWarnings("rawtypes")
     @Override
     public <C extends Credentials> List<C> getCredentials(Class<C> type, ItemGroup itemGroup,
@@ -67,9 +70,9 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
         return Collections.emptyList();
     }
 
-    public <C extends Credentials> List<C> getCredentialsForItemGroup(Class<C> type, ItemGroup itemGroup) {
-        List<C> credentials = new ArrayList<>();
-        if (itemGroup instanceof AbstractFolder) {
+    public <C extends Credentials> List<C> getCredentialsForItemGroup(Class<C> type, ItemGroup<?> itemGroup) {
+    	List<C> credentials = new ArrayList<>();
+        if (itemGroup instanceof AbstractFolder && isCredentialsSupported(type)) {
             final AbstractFolder<?> folder = AbstractFolder.class.cast(itemGroup);
             FolderKeyHubClientConfiguration property = Optional
                     .ofNullable(folder.getProperties().get(FolderKeyHubClientConfiguration.class))
@@ -83,12 +86,18 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
             }
             Collection<KeyHubUsernamePasswordCredentials> khUsernamePasswordCredentials = getKeyHubCommunicationService()
                     .fetchCredentials(folderClientCredentials);
-            for (KeyHubUsernamePasswordCredentials usernamePasswordCredentials : khUsernamePasswordCredentials) {
-                credentials.add(type.cast(usernamePasswordCredentials));
-            }
+			for (KeyHubUsernamePasswordCredentials usernamePasswordCredentials : khUsernamePasswordCredentials) {
+				if (type.isInstance(khUsernamePasswordCredentials)) {
+					credentials.add(type.cast(usernamePasswordCredentials));
+				}
+			}
         }
         return credentials;
     }
+    
+	private boolean isCredentialsSupported(Class<? extends Credentials> type) {
+		return SUPPORTED_CREDENTIALS.stream().anyMatch(type::isAssignableFrom);
+	}
 
     public IKeyHubCommunicationService getKeyHubCommunicationService() {
         return ExtensionList.lookupSingleton(IKeyHubCommunicationService.class);
