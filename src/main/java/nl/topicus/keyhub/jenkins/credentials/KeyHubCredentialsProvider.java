@@ -20,16 +20,17 @@ package nl.topicus.keyhub.jenkins.credentials;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
+import org.acegisecurity.Authentication;
 
 import com.cloudbees.hudson.plugins.folder.AbstractFolder;
 import com.cloudbees.plugins.credentials.Credentials;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.CredentialsStore;
-
-import org.acegisecurity.Authentication;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
@@ -46,8 +47,12 @@ import nl.topicus.keyhub.jenkins.vault.IKeyHubCommunicationService;
 
 @Extension
 public class KeyHubCredentialsProvider extends CredentialsProvider {
-
-	private static final Set<Class<? extends Credentials>> SUPPORTED_CREDENTIALS = Set.of(KeyHubUsernamePasswordCredentials.class);
+	private static final Set<Class<? extends Credentials>> SUPPORTED_CREDENTIALS;
+	static {
+		Set<Class<? extends Credentials>> tmp = new HashSet<>();
+		tmp.add(KeyHubUsernamePasswordCredentials.class);
+		SUPPORTED_CREDENTIALS = Collections.unmodifiableSet(tmp);
+	}
 	
     @SuppressWarnings("rawtypes")
     @Override
