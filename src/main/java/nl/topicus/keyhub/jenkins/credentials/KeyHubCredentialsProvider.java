@@ -92,7 +92,7 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
             Collection<KeyHubUsernamePasswordCredentials> khUsernamePasswordCredentials = getKeyHubCommunicationService()
                     .fetchCredentials(folderClientCredentials);
 			for (KeyHubUsernamePasswordCredentials usernamePasswordCredentials : khUsernamePasswordCredentials) {
-				if (type.isInstance(khUsernamePasswordCredentials)) {
+				if (type.isInstance(usernamePasswordCredentials)) {
 					credentials.add(type.cast(usernamePasswordCredentials));
 				}
 			}
