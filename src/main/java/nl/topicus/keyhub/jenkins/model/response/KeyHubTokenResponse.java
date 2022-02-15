@@ -22,38 +22,81 @@ import java.time.temporal.ChronoUnit;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import org.jboss.resteasy.skeleton.key.representations.AccessTokenResponse;
-
 /**
  * Custom field vaultSession added to save the vault session.
  */
-public class KeyHubTokenResponse extends AccessTokenResponse {
+public class KeyHubTokenResponse {
 
-    @JsonProperty("vaultSession")
-    private String vaultSession;
-    private Instant tokenReceivedAt;
+	@JsonProperty("access_token")
+	protected String token;
 
-    public KeyHubTokenResponse() {
-        super();
-    }
+	@JsonProperty("expires_in")
+	protected long expiresIn;
 
-    public String getVaultSession() {
-        return this.vaultSession;
-    }
+	@JsonProperty("refresh_token")
+	protected String refreshToken;
 
-    public void setVaultSession(String vaultSession) {
-        this.vaultSession = vaultSession;
-    }
+	@JsonProperty("token_type")
+	protected String tokenType;
+	
+	@JsonProperty("vaultSession")
+	private String vaultSession;
+	
+	private Instant tokenReceivedAt;
 
-    public Instant getTokenReceivedAt() {
-        return this.tokenReceivedAt;
-    }
+	public KeyHubTokenResponse() {
+		super();
+	}
 
-    public void setTokenReceivedAt(Instant tokenReceivedAt) {
-        this.tokenReceivedAt = tokenReceivedAt;
-    }
+	public String getToken() {
+		return token;
+	}
 
-    public boolean isExpired() {
-        return tokenReceivedAt.plusSeconds(getExpiresIn()).minus(2, ChronoUnit.MINUTES).isBefore(Instant.now());
-    }
+	public void setToken(String token) {
+		this.token = token;
+	}
+
+	public long getExpiresIn() {
+		return expiresIn;
+	}
+
+	public void setExpiresIn(long expiresIn) {
+		this.expiresIn = expiresIn;
+	}
+
+	public String getRefreshToken() {
+		return refreshToken;
+	}
+
+	public void setRefreshToken(String refreshToken) {
+		this.refreshToken = refreshToken;
+	}
+
+	public String getTokenType() {
+		return tokenType;
+	}
+
+	public void setTokenType(String tokenType) {
+		this.tokenType = tokenType;
+	}
+
+	public String getVaultSession() {
+		return this.vaultSession;
+	}
+
+	public void setVaultSession(String vaultSession) {
+		this.vaultSession = vaultSession;
+	}
+
+	public Instant getTokenReceivedAt() {
+		return this.tokenReceivedAt;
+	}
+
+	public void setTokenReceivedAt(Instant tokenReceivedAt) {
+		this.tokenReceivedAt = tokenReceivedAt;
+	}
+
+	public boolean isExpired() {
+		return tokenReceivedAt.plusSeconds(getExpiresIn()).minus(2, ChronoUnit.MINUTES).isBefore(Instant.now());
+	}
 }
