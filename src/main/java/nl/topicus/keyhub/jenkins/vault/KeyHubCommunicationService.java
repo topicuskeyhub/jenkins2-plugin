@@ -20,7 +20,6 @@ package nl.topicus.keyhub.jenkins.vault;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -34,16 +33,20 @@ import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
-import com.google.common.base.Strings;
-
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.resteasy.client.jaxrs.internal.BasicAuthentication;
+
+import com.cloudbees.plugins.credentials.Credentials;
+import com.google.common.base.Strings;
 
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.util.Secret;
 import nl.topicus.keyhub.jenkins.configuration.GlobalPluginConfiguration;
-import nl.topicus.keyhub.jenkins.credentials.SecretSupplier;
+import nl.topicus.keyhub.jenkins.credentials.SecretFileSupplier;
+import nl.topicus.keyhub.jenkins.credentials.SecretPasswordSupplier;
+import nl.topicus.keyhub.jenkins.credentials.file.KeyHubFileCredentials;
+import nl.topicus.keyhub.jenkins.credentials.string.KeyHubStringCredentials;
 import nl.topicus.keyhub.jenkins.credentials.username_password.KeyHubUsernamePasswordCredentials;
 import nl.topicus.keyhub.jenkins.model.ClientCredentials;
 import nl.topicus.keyhub.jenkins.model.response.KeyHubTokenResponse;
@@ -53,79 +56,88 @@ import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
 @Extension
 public class KeyHubCommunicationService implements IKeyHubCommunicationService {
 
-    private static final Logger LOG = Logger.getLogger(KeyHubCommunicationService.class.getName());
-    private RestClientBuilder restClientBuilder = new RestClientBuilder();
-    private Map<String, KeyHubTokenResponse> currentClientIdWithTokens = new ConcurrentHashMap<>();
+	private static final Logger LOG = Logger.getLogger(KeyHubCommunicationService.class.getName());
+	private RestClientBuilder restClientBuilder = new RestClientBuilder();
+	private Map<String, KeyHubTokenResponse> currentClientIdWithTokens = new ConcurrentHashMap<>();
 
-    private KeyHubTokenResponse fetchAuthenticationTokenIfNeeded(ClientCredentials clientCredentials,
-            KeyHubTokenResponse currentToken) {
-        if (currentToken != null && !currentToken.isExpired()) {
-            return currentToken;
-        }
-        String keyhubURI = getKeyHubURI().get();
-        KeyHubTokenResponse keyhubToken;
-        if (clientCredentials.getClientSecret() == null) {
-            throw new IllegalStateException("Cannot refresh access token, no secret stored/given.");
-        }
+	private KeyHubTokenResponse fetchAuthenticationTokenIfNeeded(ClientCredentials clientCredentials,
+			KeyHubTokenResponse currentToken) {
+		if (currentToken != null && !currentToken.isExpired()) {
+			return currentToken;
+		}
+		String keyhubURI = getKeyHubURI().get();
+		KeyHubTokenResponse keyhubToken;
+		if (clientCredentials.getClientSecret() == null) {
+			throw new IllegalStateException("Cannot refresh access token, no secret stored/given.");
+		}
 
-        UriBuilder authenticateUri = UriBuilder.fromUri(keyhubURI).path("/login/oauth2/token").queryParam("authVault",
-                "access");
-        Form connectionRequest = new Form().param("grant_type", "client_credentials");
-        ResteasyWebTarget target = restClientBuilder.getClient().target(authenticateUri);
-        target.register(new BasicAuthentication(clientCredentials.getClientId(),
-                Secret.toString(clientCredentials.getClientSecret())));
-        target.request().accept(MediaType.APPLICATION_JSON_TYPE);
-        keyhubToken = target.request().post(Entity.form(connectionRequest), KeyHubTokenResponse.class);
-        keyhubToken.setTokenReceivedAt(Instant.now());
+		UriBuilder authenticateUri = UriBuilder.fromUri(keyhubURI).path("/login/oauth2/token").queryParam("authVault",
+				"access");
+		Form connectionRequest = new Form().param("grant_type", "client_credentials");
+		ResteasyWebTarget target = restClientBuilder.getClient().target(authenticateUri);
+		target.register(new BasicAuthentication(clientCredentials.getClientId(),
+				Secret.toString(clientCredentials.getClientSecret())));
+		target.request().accept(MediaType.APPLICATION_JSON_TYPE);
+		keyhubToken = target.request().post(Entity.form(connectionRequest), KeyHubTokenResponse.class);
+		keyhubToken.setTokenReceivedAt(Instant.now());
 
-        return keyhubToken;
-    }
+		return keyhubToken;
+	}
 
-    protected KeyHubTokenResponse getTokenForClient(ClientCredentials credentials) {
-        return currentClientIdWithTokens.compute(credentials.getClientId(),
-                (clientId, token) -> fetchAuthenticationTokenIfNeeded(credentials, token));
-    }
+	protected KeyHubTokenResponse getTokenForClient(ClientCredentials credentials) {
+		return currentClientIdWithTokens.compute(credentials.getClientId(),
+				(clientId, token) -> fetchAuthenticationTokenIfNeeded(credentials, token));
+	}
 
-    public Collection<KeyHubUsernamePasswordCredentials> fetchCredentials(ClientCredentials clientCredentials) {
-        Optional<String> keyhubURI = getKeyHubURI();
-        if (!keyhubURI.isPresent()) {
-            LOG.log(Level.WARNING, "The KeyHub URI is not present which will present you with no output.");
-            return Collections.emptyList();
-        }
-        IVaultAccessor vaultAccessor = createVaultAccessor(clientCredentials);
-        List<KeyHubUsernamePasswordCredentials> jRecords = new ArrayList<>();
-        try {
-            List<KeyHubGroup> khGroups = vaultAccessor.fetchGroupData();
-            List<KeyHubVaultRecord> khRecords = vaultAccessor.fetchRecordsFromVault(khGroups);
-            for (int j = 0; j < khGroups.size(); j++) {
-                for (int i = 0; i < khRecords.size(); i++) {
-                    jRecords.add(KeyHubUsernamePasswordCredentials.KeyHubCredentialsBuilder.newInstance()
-                            .id(khRecords.get(i).getUUID()).recordName(khRecords.get(i).getName())
-                            .href(khRecords.get(i).getHref()).username(khRecords.get(i).getUsername())
-                            .password(new SecretSupplier(this, clientCredentials, khRecords.get(i).getHref())).build());
-                }
-            }
-            return jRecords;
+	@SuppressWarnings("unchecked")
+	public <C extends Credentials> List<C> fetchCredentials(Class<C> type, ClientCredentials clientCredentials) {
+		Optional<String> keyhubURI = getKeyHubURI();
+		if (!keyhubURI.isPresent()) {
+			LOG.log(Level.WARNING, "The KeyHub URI is not present which will present you with no output.");
+			return Collections.emptyList();
+		}
+		IVaultAccessor vaultAccessor = createVaultAccessor(clientCredentials);
+		List<C> jRecords = new ArrayList<>();
+		try {
+			List<KeyHubGroup> khGroups = vaultAccessor.fetchGroupData();
+			List<KeyHubVaultRecord> khRecords = vaultAccessor.fetchRecordsFromVault(khGroups);
+			for (KeyHubVaultRecord curRecord : khRecords) {
+				if (type.isAssignableFrom(KeyHubUsernamePasswordCredentials.class)) {
+					jRecords.add((C) KeyHubUsernamePasswordCredentials.Builder.newInstance().id(curRecord.getUUID())
+							.recordName(curRecord.getName()).href(curRecord.getHref()).username(curRecord.getUsername())
+							.password(new SecretPasswordSupplier(this, clientCredentials, curRecord.getHref()))
+							.build());
+				} else if (type.isAssignableFrom(KeyHubStringCredentials.class)) {
+					jRecords.add((C) KeyHubStringCredentials.Builder.newInstance().id(curRecord.getUUID())
+							.recordName(curRecord.getName()).href(curRecord.getHref())
+							.secret(new SecretPasswordSupplier(this, clientCredentials, curRecord.getHref())).build());
+				} else if (type.isAssignableFrom(KeyHubFileCredentials.class)) {
+					jRecords.add((C) KeyHubFileCredentials.Builder.newInstance().id(curRecord.getUUID())
+							.recordName(curRecord.getName()).href(curRecord.getHref()).filename(curRecord.getFilename())
+							.file(new SecretFileSupplier(this, clientCredentials, curRecord.getHref())).build());
+				}
+			}
+			return jRecords;
 
-        } catch (IOException e) {
-            LOG.log(Level.WARNING, "IO could not fetch credentials out of the KeyHub vault: message=[{0}]",
-                    e.getMessage());
-        }
-        return Collections.emptyList();
-    }
+		} catch (IOException e) {
+			LOG.log(Level.WARNING, "IO could not fetch credentials out of the KeyHub vault: message=[{0}]",
+					e.getMessage());
+		}
+		return Collections.emptyList();
+	}
 
-    protected IVaultAccessor createVaultAccessor(ClientCredentials clientCredentials) {
-        return new VaultAccessor(clientCredentials, this.getKeyHubURI().orElse(""), restClientBuilder,
-                getTokenForClient(clientCredentials));
-    }
+	protected IVaultAccessor createVaultAccessor(ClientCredentials clientCredentials) {
+		return new VaultAccessor(clientCredentials, this.getKeyHubURI().orElse(""), restClientBuilder,
+				getTokenForClient(clientCredentials));
+	}
 
-    public KeyHubVaultRecord fetchRecordSecret(ClientCredentials clientCredentials, String href) {
-        IVaultAccessor vaultAccessor = createVaultAccessor(clientCredentials);
-        return vaultAccessor.fetchRecordSecret(href);
-    }
+	public KeyHubVaultRecord fetchRecordSecret(ClientCredentials clientCredentials, String href) {
+		IVaultAccessor vaultAccessor = createVaultAccessor(clientCredentials);
+		return vaultAccessor.fetchRecordSecret(href);
+	}
 
-    protected Optional<String> getKeyHubURI() {
-        return Optional.ofNullable(
-                Strings.emptyToNull(ExtensionList.lookupSingleton(GlobalPluginConfiguration.class).getKeyhubURI()));
-    }
+	protected Optional<String> getKeyHubURI() {
+		return Optional.ofNullable(
+				Strings.emptyToNull(ExtensionList.lookupSingleton(GlobalPluginConfiguration.class).getKeyhubURI()));
+	}
 }

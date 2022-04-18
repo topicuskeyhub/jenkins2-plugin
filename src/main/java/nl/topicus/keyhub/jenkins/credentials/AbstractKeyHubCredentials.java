@@ -19,27 +19,17 @@ package nl.topicus.keyhub.jenkins.credentials;
 
 import com.cloudbees.plugins.credentials.impl.BaseStandardCredentials;
 
-import hudson.util.Secret;
-
 public abstract class AbstractKeyHubCredentials extends BaseStandardCredentials {
 
     private static final long serialVersionUID = 1L;
     private final String href;
-    private final String username;
 
-    protected AbstractKeyHubCredentials(String id, String description, String href, String username) {
+    protected AbstractKeyHubCredentials(String id, String description, String href) {
         super(id, description);
         this.href = href;
-        this.username = username;
     }
 
     public String getHref() {
         return this.href;
     }
-
-    public String getUsername() {
-        return this.username;
-    }
-
-    public abstract Secret getPassword();
 }

@@ -24,13 +24,13 @@ import nl.topicus.keyhub.jenkins.model.ClientCredentials;
 import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
 import nl.topicus.keyhub.jenkins.vault.IKeyHubCommunicationService;
 
-public class SecretSupplier implements Supplier<Secret> {
+public class SecretFileSupplier implements Supplier<Secret> {
 
     private transient IKeyHubCommunicationService keyhubCommunicationService;
     private ClientCredentials clientCredentials;
     private String href;
 
-    public SecretSupplier(IKeyHubCommunicationService keyhubCommunicationsService, ClientCredentials clientCredentials,
+    public SecretFileSupplier(IKeyHubCommunicationService keyhubCommunicationsService, ClientCredentials clientCredentials,
             String href) {
         this.keyhubCommunicationService = keyhubCommunicationsService;
         this.clientCredentials = clientCredentials;
@@ -40,7 +40,6 @@ public class SecretSupplier implements Supplier<Secret> {
     @Override
     public Secret get() {
         KeyHubVaultRecord secret = keyhubCommunicationService.fetchRecordSecret(this.clientCredentials, this.href);
-        return secret.getAdditionalObjects().getSecret().getPassword();
+        return secret.getAdditionalObjects().getSecret().getFile();
     }
-
 }

@@ -31,11 +31,17 @@ public class KeyHubUsernamePasswordCredentials extends AbstractKeyHubCredentials
         implements StandardUsernamePasswordCredentials {
 
     private static final long serialVersionUID = 1L;
+    private final String username;
     private Supplier<Secret> password;
 
-    public KeyHubUsernamePasswordCredentials(KeyHubCredentialsBuilder builder) {
-        super(builder.id, builder.recordName, builder.href, builder.username);
+    public KeyHubUsernamePasswordCredentials(Builder builder) {
+        super(builder.id, builder.recordName, builder.href);
+        this.username = builder.username;
         this.password = builder.password;
+    }
+
+    public String getUsername() {
+        return this.username;
     }
 
     @NonNull
@@ -58,7 +64,7 @@ public class KeyHubUsernamePasswordCredentials extends AbstractKeyHubCredentials
         }
     }
 
-    public static class KeyHubCredentialsBuilder {
+    public static class Builder {
 
         private String id;
         private String recordName;
@@ -66,34 +72,34 @@ public class KeyHubUsernamePasswordCredentials extends AbstractKeyHubCredentials
         private String username;
         private Supplier<Secret> password;
 
-        public static KeyHubCredentialsBuilder newInstance() {
-            return new KeyHubCredentialsBuilder();
+        public static Builder newInstance() {
+            return new Builder();
         }
 
-        private KeyHubCredentialsBuilder() {
+        private Builder() {
         }
 
-        public KeyHubCredentialsBuilder id(String id) {
+        public Builder id(String id) {
             this.id = id;
             return this;
         }
 
-        public KeyHubCredentialsBuilder href(String href) {
+        public Builder href(String href) {
             this.href = href;
             return this;
         }
 
-        public KeyHubCredentialsBuilder recordName(String recordName) {
+        public Builder recordName(String recordName) {
             this.recordName = recordName;
             return this;
         }
 
-        public KeyHubCredentialsBuilder username(String username) {
+        public Builder username(String username) {
             this.username = username;
             return this;
         }
 
-        public KeyHubCredentialsBuilder password(Supplier<Secret> password) {
+        public Builder password(Supplier<Secret> password) {
             this.password = password;
             return this;
         }

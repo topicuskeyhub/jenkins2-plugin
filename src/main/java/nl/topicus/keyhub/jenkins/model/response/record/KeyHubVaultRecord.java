@@ -27,78 +27,89 @@ import nl.topicus.keyhub.jenkins.model.response.Link;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class KeyHubVaultRecord {
-    private String type;
-    private List<Link> links;
-    private AdditionalObjectsOfVaultRecord additionalObjects;
-    private String uuid;
-    private String name;
-    private String username;
+	private String type;
+	private List<Link> links;
+	private AdditionalObjectsOfVaultRecord additionalObjects;
+	private String uuid;
+	private String name;
+	private String filename;
+	private String username;
 
-    @JsonProperty("$type")
-    public String getType() {
-        return type;
-    }
+	@JsonProperty("$type")
+	public String getType() {
+		return type;
+	}
 
-    @JsonProperty("$type")
-    public void setType(String value) {
-        this.type = value;
-    }
+	@JsonProperty("$type")
+	public void setType(String value) {
+		this.type = value;
+	}
 
-    @JsonProperty("links")
-    public List<Link> getLinks() {
-        return links;
-    }
+	@JsonProperty("links")
+	public List<Link> getLinks() {
+		return links;
+	}
 
-    @JsonProperty("links")
-    public void setLinks(List<Link> value) {
-        this.links = value;
-    }
+	@JsonProperty("links")
+	public void setLinks(List<Link> value) {
+		this.links = value;
+	}
 
-    @JsonProperty("additionalObjects")
-    public AdditionalObjectsOfVaultRecord getAdditionalObjects() {
-        return additionalObjects;
-    }
+	@JsonProperty("additionalObjects")
+	public AdditionalObjectsOfVaultRecord getAdditionalObjects() {
+		return additionalObjects;
+	}
 
-    @JsonProperty("additionalObjects")
-    public void setAdditionalObjects(AdditionalObjectsOfVaultRecord value) {
-        this.additionalObjects = value;
-    }
+	@JsonProperty("additionalObjects")
+	public void setAdditionalObjects(AdditionalObjectsOfVaultRecord value) {
+		this.additionalObjects = value;
+	}
 
-    @JsonProperty("uuid")
-    public String getUUID() {
-        return this.uuid;
-    }
+	@JsonProperty("uuid")
+	public String getUUID() {
+		return this.uuid;
+	}
 
-    @JsonProperty("uuid")
-    public void setUUID(String uuid) {
-        this.uuid = uuid;
-    }
+	@JsonProperty("uuid")
+	public void setUUID(String uuid) {
+		this.uuid = uuid;
+	}
 
-    @JsonProperty("name")
-    public String getName() {
-        return name;
-    }
+	@JsonProperty("name")
+	public String getName() {
+		return name;
+	}
 
-    @JsonProperty("name")
-    public void setName(String value) {
-        this.name = value;
-    }
+	@JsonProperty("name")
+	public void setName(String value) {
+		this.name = value;
+	}
 
-    @JsonProperty("username")
-    public String getUsername() {
-        return username;
-    }
+	@JsonProperty("filename")
+	public String getFilename() {
+		return filename;
+	}
 
-    @JsonProperty("username")
-    public void setUsername(String value) {
-        this.username = value;
-    }
+	@JsonProperty("filename")
+	public void setFilename(String filename) {
+		this.filename = filename;
+	}
 
-    public String getHref() {
-        return links.get(0).getHref();
-    }
+	@JsonProperty("username")
+	public String getUsername() {
+		return username;
+	}
 
-    public void setRecordSecret(Secret secret) {
-        additionalObjects.getSecret().setPassword(secret);
-    }
+	@JsonProperty("username")
+	public void setUsername(String value) {
+		this.username = value;
+	}
+
+	public String getHref() {
+		return links.get(0).getHref();
+	}
+
+	public void setRecordSecret(Secret secret) {
+		additionalObjects.getSecret().setPassword(secret);
+	}
 }

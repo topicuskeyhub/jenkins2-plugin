@@ -41,6 +41,8 @@ import hudson.model.ModelObject;
 import hudson.security.ACL;
 import nl.topicus.keyhub.jenkins.Messages;
 import nl.topicus.keyhub.jenkins.configuration.FolderKeyHubClientConfiguration;
+import nl.topicus.keyhub.jenkins.credentials.file.KeyHubFileCredentials;
+import nl.topicus.keyhub.jenkins.credentials.string.KeyHubStringCredentials;
 import nl.topicus.keyhub.jenkins.credentials.username_password.KeyHubUsernamePasswordCredentials;
 import nl.topicus.keyhub.jenkins.model.ClientCredentials;
 import nl.topicus.keyhub.jenkins.vault.IKeyHubCommunicationService;
@@ -50,82 +52,77 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
 	private static final Set<Class<? extends Credentials>> SUPPORTED_CREDENTIALS;
 	static {
 		Set<Class<? extends Credentials>> tmp = new HashSet<>();
+		tmp.add(KeyHubFileCredentials.class);
+		tmp.add(KeyHubStringCredentials.class);
 		tmp.add(KeyHubUsernamePasswordCredentials.class);
 		SUPPORTED_CREDENTIALS = Collections.unmodifiableSet(tmp);
 	}
-	
-    @SuppressWarnings("rawtypes")
-    @Override
-    public <C extends Credentials> List<C> getCredentials(Class<C> type, ItemGroup itemGroup,
-            @Nullable Authentication authentication) {
-        if (ACL.SYSTEM.equals(authentication)) {
-            List<C> result = new ArrayList<>();
-            while (itemGroup != null) {
-                if (itemGroup instanceof AbstractFolder) {
-                    result.addAll(getCredentialsForItemGroup(type, itemGroup));
-                }
-                if (itemGroup instanceof Item) {
-                    itemGroup = Item.class.cast(itemGroup).getParent();
-                } else {
-                    break;
-                }
-            }
-            return result;
-        }
-        return Collections.emptyList();
-    }
 
-    public <C extends Credentials> List<C> getCredentialsForItemGroup(Class<C> type, ItemGroup<?> itemGroup) {
-    	List<C> credentials = new ArrayList<>();
-        if (itemGroup instanceof AbstractFolder && isCredentialsSupported(type)) {
-            final AbstractFolder<?> folder = AbstractFolder.class.cast(itemGroup);
-            FolderKeyHubClientConfiguration property = Optional
-                    .ofNullable(folder.getProperties().get(FolderKeyHubClientConfiguration.class))
-                    .orElse(new FolderKeyHubClientConfiguration());
-            if (property.getConfiguration() == null) {
-                return Collections.emptyList();
-            }
-            ClientCredentials folderClientCredentials = property.getConfiguration().getClientCredentials();
-            if (folderClientCredentials.getClientId().isEmpty()) {
-                return Collections.emptyList();
-            }
-            Collection<KeyHubUsernamePasswordCredentials> khUsernamePasswordCredentials = getKeyHubCommunicationService()
-                    .fetchCredentials(folderClientCredentials);
-			for (KeyHubUsernamePasswordCredentials usernamePasswordCredentials : khUsernamePasswordCredentials) {
-				if (type.isInstance(usernamePasswordCredentials)) {
-					credentials.add(type.cast(usernamePasswordCredentials));
+	@SuppressWarnings("rawtypes")
+	@Override
+	public <C extends Credentials> List<C> getCredentials(Class<C> type, ItemGroup itemGroup,
+			@Nullable Authentication authentication) {
+		if (ACL.SYSTEM.equals(authentication)) {
+			List<C> result = new ArrayList<>();
+			while (itemGroup != null) {
+				if (itemGroup instanceof AbstractFolder) {
+					result.addAll(getCredentialsForItemGroup(type, itemGroup));
+				}
+				if (itemGroup instanceof Item) {
+					itemGroup = Item.class.cast(itemGroup).getParent();
+				} else {
+					break;
 				}
 			}
-        }
-        return credentials;
-    }
-    
+			return result;
+		}
+		return Collections.emptyList();
+	}
+
+	public <C extends Credentials> List<C> getCredentialsForItemGroup(Class<C> type, ItemGroup<?> itemGroup) {
+		if (itemGroup instanceof AbstractFolder && isCredentialsSupported(type)) {
+			final AbstractFolder<?> folder = AbstractFolder.class.cast(itemGroup);
+			FolderKeyHubClientConfiguration property = Optional
+					.ofNullable(folder.getProperties().get(FolderKeyHubClientConfiguration.class))
+					.orElse(new FolderKeyHubClientConfiguration());
+			if (property.getConfiguration() == null) {
+				return Collections.emptyList();
+			}
+			ClientCredentials folderClientCredentials = property.getConfiguration().getClientCredentials();
+			if (folderClientCredentials.getClientId().isEmpty()) {
+				return Collections.emptyList();
+			}
+			return getKeyHubCommunicationService().fetchCredentials(type, folderClientCredentials);
+		}
+		return Collections.emptyList();
+	}
+
 	private boolean isCredentialsSupported(Class<? extends Credentials> type) {
 		return SUPPORTED_CREDENTIALS.stream().anyMatch(type::isAssignableFrom);
 	}
 
-    public IKeyHubCommunicationService getKeyHubCommunicationService() {
-        return ExtensionList.lookupSingleton(IKeyHubCommunicationService.class);
-    }
+	public IKeyHubCommunicationService getKeyHubCommunicationService() {
+		return ExtensionList.lookupSingleton(IKeyHubCommunicationService.class);
+	}
 
-    @Override
-    public String getDisplayName() {
-        return Messages.keyhubCredentialsProvider();
-    }
+	@Override
+	public String getDisplayName() {
+		return Messages.keyhubCredentialsProvider();
+	}
 
-    @Override
-    public CredentialsStore getStore(ModelObject object) {
-        if (!(object instanceof ItemGroup)) {
-            return null;
-        }
-        ItemGroup<?> owner = (ItemGroup<?>) object;
+	@Override
+	public CredentialsStore getStore(ModelObject object) {
+		if (!(object instanceof ItemGroup)) {
+			return null;
+		}
+		ItemGroup<?> owner = (ItemGroup<?>) object;
 
-        return new KeyHubCredentialsStore(this, owner);
+		return new KeyHubCredentialsStore(this, owner);
 
-    }
+	}
 
-    @Override
-    public String getIconClassName() {
-        return "icon-keyhub-credentials-vault";
-    }
+	@Override
+	public String getIconClassName() {
+		return "icon-keyhub-credentials-vault";
+	}
 }

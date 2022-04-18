@@ -8,7 +8,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -70,8 +69,8 @@ public class KeyHubCommunicationServiceTest {
         when(mockedVaultAccessor.fetchRecordsFromVault(anyList())).thenReturn(testKeyHubRecordList);
 
         // Act
-        Collection<KeyHubUsernamePasswordCredentials> result = communicationService
-                .fetchCredentials(testClientCredentials);
+        List<KeyHubUsernamePasswordCredentials> result = communicationService
+                .fetchCredentials(KeyHubUsernamePasswordCredentials.class, testClientCredentials);
 
         // Assert
         assertEquals("testRecordUUID", result.iterator().next().getId());

@@ -18,7 +18,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 
 import hudson.model.ItemGroup;
 import nl.topicus.keyhub.jenkins.credentials.username_password.KeyHubUsernamePasswordCredentials;
-import nl.topicus.keyhub.jenkins.credentials.username_password.KeyHubUsernamePasswordCredentials.KeyHubCredentialsBuilder;
+import nl.topicus.keyhub.jenkins.credentials.username_password.KeyHubUsernamePasswordCredentials.Builder;
 
 public class KeyHubCredentialsStoreTest {
 
@@ -32,7 +32,7 @@ public class KeyHubCredentialsStoreTest {
         ItemGroup mockedItemGroup = mock(ItemGroup.class);
         KeyHubCredentialsStore store = new KeyHubCredentialsStore(mockedProvider, mockedItemGroup);
         List<Credentials> result = new ArrayList<>();
-        KeyHubUsernamePasswordCredentials testCredentials = KeyHubCredentialsBuilder.newInstance().id("testId")
+        KeyHubUsernamePasswordCredentials testCredentials = Builder.newInstance().id("testId")
                 .recordName("testRecord").href("testHref").username("testUsername").build();
         Credentials testCredential = (Credentials) testCredentials;
         result.add(testCredential);
@@ -53,7 +53,7 @@ public class KeyHubCredentialsStoreTest {
         ItemGroup mockedItemGroup = mock(ItemGroup.class);
         KeyHubCredentialsStore store = new KeyHubCredentialsStore(mockedProvider, mockedItemGroup);
         List<Credentials> result = new ArrayList<>();
-        KeyHubUsernamePasswordCredentials testCredentials = KeyHubCredentialsBuilder.newInstance().id("testId")
+        KeyHubUsernamePasswordCredentials testCredentials = Builder.newInstance().id("testId")
                 .recordName("testRecord").href("testHref").username("testUsername").build();
         Credentials testCredential = (Credentials) testCredentials;
         result.add(testCredential);

@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 import org.junit.Test;
 
 import hudson.util.Secret;
-import nl.topicus.keyhub.jenkins.credentials.SecretSupplier;
+import nl.topicus.keyhub.jenkins.credentials.SecretPasswordSupplier;
 import nl.topicus.keyhub.jenkins.model.ClientCredentials;
 import nl.topicus.keyhub.jenkins.model.response.record.AdditionalObjectsOfVaultRecord;
 import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
@@ -35,7 +35,7 @@ public class SecretSupplierTest {
         ClientCredentials testClientCredentials = new ClientCredentials("testId", Secret.fromString("testSecret"));
 
 
-        SecretSupplier secretSupplier = new SecretSupplier(mockedService, testClientCredentials, "testHref");
+        SecretPasswordSupplier secretSupplier = new SecretPasswordSupplier(mockedService, testClientCredentials, "testHref");
 
         when(mockedService.fetchRecordSecret(any(), anyString())).thenReturn(testRecord);
 

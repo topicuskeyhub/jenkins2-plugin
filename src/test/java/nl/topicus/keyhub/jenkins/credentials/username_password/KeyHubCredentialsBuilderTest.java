@@ -12,7 +12,7 @@ public class KeyHubCredentialsBuilderTest {
         KeyHubUsernamePasswordCredentials builtCredentials;
 
         // Act
-        builtCredentials = KeyHubUsernamePasswordCredentials.KeyHubCredentialsBuilder.newInstance().id("123-testId")
+        builtCredentials = KeyHubUsernamePasswordCredentials.Builder.newInstance().id("123-testId")
                 .recordName("testRecordName").href("testHref").username("testUsername").password(null).build();
 
         // Assert

@@ -25,7 +25,7 @@ public class RecordSecret {
     private String type;
     private Secret password;
     private String writeTotp;
-    private String file;
+    private Secret file;
     private String comment;
 
     @JsonProperty("$type")
@@ -59,12 +59,12 @@ public class RecordSecret {
     }
 
     @JsonProperty("file")
-    public String getFile() {
+    public Secret getFile() {
         return file;
     }
 
     @JsonProperty("file")
-    public void setFile(String value) {
+    public void setFile(Secret value) {
         this.file = value;
     }
 

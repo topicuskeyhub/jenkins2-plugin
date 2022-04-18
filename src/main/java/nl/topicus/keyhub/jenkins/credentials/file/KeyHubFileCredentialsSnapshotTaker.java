@@ -15,20 +15,25 @@
  * limitations under the License.
  */
 
-package nl.topicus.keyhub.jenkins.vault;
+package nl.topicus.keyhub.jenkins.credentials.file;
 
-import java.util.List;
+import com.cloudbees.plugins.credentials.CredentialsSnapshotTaker;
 
-import com.cloudbees.plugins.credentials.Credentials;
+import hudson.Extension;
+import nl.topicus.keyhub.jenkins.credentials.Snapshot;
 
-import hudson.ExtensionPoint;
-import nl.topicus.keyhub.jenkins.model.ClientCredentials;
-import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
+@Extension
+public class KeyHubFileCredentialsSnapshotTaker extends CredentialsSnapshotTaker<KeyHubFileCredentials> {
 
-public interface IKeyHubCommunicationService extends ExtensionPoint {
+	@Override
+	public Class<KeyHubFileCredentials> type() {
+		return KeyHubFileCredentials.class;
+	}
 
-	public <C extends Credentials> List<C> fetchCredentials(Class<C> type, ClientCredentials clientCredentials);
-
-    public KeyHubVaultRecord fetchRecordSecret(ClientCredentials clientCredentials, String href);
-
+	@Override
+	public KeyHubFileCredentials snapshot(KeyHubFileCredentials credential) {
+		return KeyHubFileCredentials.Builder.newInstance().id(credential.getId())
+				.recordName(credential.getDescription()).href(credential.getHref()).filename(credential.getFileName())
+				.file(new Snapshot<>(credential.getFile())).build();
+	}
 }

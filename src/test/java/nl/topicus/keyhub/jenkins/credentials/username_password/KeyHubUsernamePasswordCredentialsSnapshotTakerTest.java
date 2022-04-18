@@ -22,7 +22,7 @@ public class KeyHubUsernamePasswordCredentialsSnapshotTakerTest {
         Secret testSecret = Secret.fromString("testSecret");
         Supplier<Secret> mockedSecretSupplier1 = mock(Supplier.class);
 
-        KeyHubUsernamePasswordCredentials testCredential = KeyHubUsernamePasswordCredentials.KeyHubCredentialsBuilder
+        KeyHubUsernamePasswordCredentials testCredential = KeyHubUsernamePasswordCredentials.Builder
                 .newInstance().id("testId").recordName("testName").href("testHref").username("testUsername")
                 .password(mockedSecretSupplier1).build();
 
