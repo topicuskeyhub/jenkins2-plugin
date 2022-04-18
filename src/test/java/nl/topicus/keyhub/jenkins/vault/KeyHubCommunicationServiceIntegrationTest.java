@@ -44,9 +44,9 @@ public class KeyHubCommunicationServiceIntegrationTest {
 				.fetchCredentials(StandardUsernamePasswordCredentials.class, testClientCredentials);
 
 		// Assert
-		assertEquals("Demo Record 3_IT", credentials.get(1).getDescription());
-		assertEquals("Demo Record 1_IT", credentials.get(2).getDescription());
-		assertEquals("Demo Record 2_IT", credentials.get(3).getDescription());
+		assertEquals("Demo Record 1_IT", credentials.get(1).getDescription());
+		assertEquals("Demo Record 2_IT", credentials.get(2).getDescription());
+		assertEquals("Demo Record 3_IT", credentials.get(3).getDescription());
 		KeyHubUsernamePasswordCredentials cred0 = (KeyHubUsernamePasswordCredentials) credentials.get(0);
 		MatcherAssert.assertThat(communicationService.fetchRecordSecret(testClientCredentials, cred0.getHref())
 				.getAdditionalObjects().getSecret().getPassword().getPlainText(), is(not(emptyOrNullString())));
@@ -65,12 +65,12 @@ public class KeyHubCommunicationServiceIntegrationTest {
 				testClientCredentials);
 
 		// Assert
-		assertEquals("Demo Record 3_IT", credentials.get(1).getDescription());
-		assertEquals("Demo Record 3_IT", credentials.get(1).getSecret().getPlainText());
-		assertEquals("Demo Record 1_IT", credentials.get(2).getDescription());
-		assertEquals("Demo Record 3_IT", credentials.get(2).getSecret().getPlainText());
-		assertEquals("Demo Record 2_IT", credentials.get(3).getDescription());
-		assertEquals("Demo Record 3_IT", credentials.get(3).getSecret().getPlainText());
+		assertEquals("Demo Record 1_IT", credentials.get(1).getDescription());
+		assertEquals("TGoH59kqx4j1TYjBnofMD8LqFaXV", credentials.get(1).getSecret().getPlainText());
+		assertEquals("Demo Record 2_IT", credentials.get(2).getDescription());
+		assertEquals("TestDuplicateRecordName", credentials.get(2).getSecret().getPlainText());
+		assertEquals("Demo Record 3_IT", credentials.get(3).getDescription());
+		assertEquals("rJbqOiVgt26IZJDz7AEs0MJfVRn7", credentials.get(3).getSecret().getPlainText());
 	}
 
 	@Test
@@ -86,9 +86,9 @@ public class KeyHubCommunicationServiceIntegrationTest {
 				testClientCredentials);
 
 		// Assert
-		assertEquals("Demo Record 3_IT", credentials.get(1).getDescription());
-		assertEquals("Demo Record 3_IT", credentials.get(1).getFileName());
-		assertEquals("Demo Record 3_IT",
+		assertEquals("Demo Record 1_IT", credentials.get(1).getDescription());
+		assertEquals("KeyHubTestSecretFile.txt", credentials.get(1).getFileName());
+		assertEquals("Content of the KeyHub secret file",
 				new String(IO.readBytes(credentials.get(1).getContent()), StandardCharsets.UTF_8));
 	}
 }
