@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,6 +23,7 @@ import nl.topicus.keyhub.jenkins.model.response.group.KeyHubGroup;
 import nl.topicus.keyhub.jenkins.model.response.record.AdditionalObjectsOfVaultRecord;
 import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
 import nl.topicus.keyhub.jenkins.model.response.record.RecordSecret;
+import nl.topicus.keyhub.jenkins.model.response.record.VaultRecordSecretType;
 
 public class KeyHubCommunicationServiceTest {
 
@@ -41,6 +43,7 @@ public class KeyHubCommunicationServiceTest {
         testRecord.setUUID("testRecordUUID");
         testRecord.setName("testKeyHubRecord");
         testRecord.setUsername("testRecordUsername");
+		testRecord.setTypes(Collections.singleton(VaultRecordSecretType.PASSWORD));
 
         List<KeyHubVaultRecord> testKeyHubRecordList = new ArrayList<>(Arrays.asList(testRecord));
 
