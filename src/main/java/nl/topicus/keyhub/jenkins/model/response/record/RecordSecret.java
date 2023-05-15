@@ -22,59 +22,59 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import hudson.util.Secret;
 
 public class RecordSecret {
-    private String type;
-    private Secret password;
-    private String writeTotp;
-    private Secret file;
-    private String comment;
+	private String type;
+	private Secret password;
+	private String writeTotp;
+	private Secret file;
+	private String comment;
 
-    @JsonProperty("$type")
-    public String getType() {
-        return type;
-    }
+	@JsonProperty("$type")
+	public String getType() {
+		return type;
+	}
 
-    @JsonProperty("$type")
-    public void setType(String value) {
-        this.type = value;
-    }
+	@JsonProperty("$type")
+	public void setType(String value) {
+		this.type = value;
+	}
 
-    @JsonProperty("password")
-    public Secret getPassword() {
-        return password;
-    }
+	@JsonProperty("password")
+	public Secret getPassword() {
+		return password;
+	}
 
-    @JsonProperty("password")
-    public void setPassword(Secret value) {
-        this.password = value;
-    }
+	@JsonProperty("password")
+	public void setPassword(Secret value) {
+		this.password = value;
+	}
 
-    @JsonProperty("writeTotp")
-    public String getWriteTotp() {
-        return writeTotp;
-    }
+	@JsonProperty("writeTotp")
+	public String getWriteTotp() {
+		return writeTotp;
+	}
 
-    @JsonProperty("writeTotp")
-    public void setWriteTotp(String value) {
-        this.writeTotp = value;
-    }
+	@JsonProperty("writeTotp")
+	public void setWriteTotp(String value) {
+		this.writeTotp = value;
+	}
 
-    @JsonProperty("file")
-    public Secret getFile() {
-        return file;
-    }
+	@JsonProperty("file")
+	public Secret getFile() {
+		return file;
+	}
 
-    @JsonProperty("file")
-    public void setFile(Secret value) {
-        this.file = value;
-    }
+	@JsonProperty("file")
+	public void setFile(Secret value) {
+		this.file = value;
+	}
 
-    @JsonProperty("comment")
-    public String getComment() {
-        return comment;
-    }
+	@JsonProperty("comment")
+	public String getComment() {
+		return comment;
+	}
 
-    @JsonProperty("comment")
-    public void setComment(String value) {
-        this.comment = value;
-    }
+	@JsonProperty("comment")
+	public void setComment(String value) {
+		this.comment = value;
+	}
 }

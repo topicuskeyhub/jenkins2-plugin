@@ -15,15 +15,18 @@
  * limitations under the License.
  */
 
-package nl.topicus.keyhub.jenkins.credentials.file;
+package nl.topicus.keyhub.jenkins.credentials.sshuser;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Supplier;
 
-import org.jenkinsci.plugins.plaincredentials.FileCredentials;
+import com.cloudbees.jenkins.plugins.sshcredentials.SSHUserPrivateKey;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
@@ -31,25 +34,41 @@ import hudson.util.Secret;
 import nl.topicus.keyhub.jenkins.Messages;
 import nl.topicus.keyhub.jenkins.credentials.AbstractKeyHubCredentials;
 
-public class KeyHubFileCredentials extends AbstractKeyHubCredentials implements FileCredentials {
+public class KeyHubSSHUserPrivateKeyCredentials extends AbstractKeyHubCredentials implements SSHUserPrivateKey {
 
 	private static final long serialVersionUID = 1L;
-	private final String filename;
+	private final String username;
+	private Supplier<Secret> password;
 	private Supplier<Secret> file;
 
-	public KeyHubFileCredentials(Builder builder) {
+	public KeyHubSSHUserPrivateKeyCredentials(Builder builder) {
 		super(builder.id, builder.recordName, builder.href);
-		this.filename = builder.filename;
+		this.username = builder.username;
+		this.password = builder.password;
 		this.file = builder.file;
 	}
 
 	@Override
-	public String getFileName() {
-		return filename;
+	public String getUsername() {
+		return username;
 	}
 
-	@NonNull
 	@Override
+	public String getPrivateKey() {
+		return getPrivateKeys().get(0);
+	}
+
+	@Override
+	public List<String> getPrivateKeys() {
+		return Collections.singletonList(
+				new String(Base64.getDecoder().decode(file.get().getPlainText()), StandardCharsets.UTF_8));
+	}
+
+	@Override
+	public Secret getPassphrase() {
+		return password.get();
+	}
+
 	public InputStream getContent() throws IOException {
 		return new ByteArrayInputStream(Base64.getDecoder().decode(file.get().getPlainText()));
 	}
@@ -64,7 +83,12 @@ public class KeyHubFileCredentials extends AbstractKeyHubCredentials implements 
 		@Override
 		@NonNull
 		public String getDisplayName() {
-			return Messages.keyhubFile();
+			return Messages.keyhubSSHUserPrivateKey();
+		}
+
+		@Override
+		public String getIconClassName() {
+			return "icon-fingerprint";
 		}
 	}
 
@@ -73,7 +97,8 @@ public class KeyHubFileCredentials extends AbstractKeyHubCredentials implements 
 		private String id;
 		private String recordName;
 		private String href;
-		private String filename;
+		private String username;
+		private Supplier<Secret> password;
 		private Supplier<Secret> file;
 
 		public static Builder newInstance() {
@@ -98,8 +123,13 @@ public class KeyHubFileCredentials extends AbstractKeyHubCredentials implements 
 			return this;
 		}
 
-		public Builder filename(String filename) {
-			this.filename = filename;
+		public Builder username(String username) {
+			this.username = username;
+			return this;
+		}
+
+		public Builder password(Supplier<Secret> password) {
+			this.password = password;
 			return this;
 		}
 
@@ -108,8 +138,8 @@ public class KeyHubFileCredentials extends AbstractKeyHubCredentials implements 
 			return this;
 		}
 
-		public KeyHubFileCredentials build() {
-			return new KeyHubFileCredentials(this);
+		public KeyHubSSHUserPrivateKeyCredentials build() {
+			return new KeyHubSSHUserPrivateKeyCredentials(this);
 		}
 
 	}

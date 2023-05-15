@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package nl.topicus.keyhub.jenkins.credentials.string;
+package nl.topicus.keyhub.jenkins.credentials.sshuser;
 
 import com.cloudbees.plugins.credentials.CredentialsSnapshotTaker;
 
@@ -23,17 +23,19 @@ import hudson.Extension;
 import nl.topicus.keyhub.jenkins.credentials.Snapshot;
 
 @Extension
-public class KeyHubUsernamePasswordCredentialsSnapshotTaker extends CredentialsSnapshotTaker<KeyHubStringCredentials> {
+public class KeyHubSSHUserPrivateKeyCredentialsSnapshotTaker
+		extends CredentialsSnapshotTaker<KeyHubSSHUserPrivateKeyCredentials> {
 
 	@Override
-	public Class<KeyHubStringCredentials> type() {
-		return KeyHubStringCredentials.class;
+	public Class<KeyHubSSHUserPrivateKeyCredentials> type() {
+		return KeyHubSSHUserPrivateKeyCredentials.class;
 	}
 
 	@Override
-	public KeyHubStringCredentials snapshot(KeyHubStringCredentials credential) {
-		return KeyHubStringCredentials.Builder.newInstance().id(credential.getId())
-				.recordName(credential.getDescription()).href(credential.getHref())
-				.secret(new Snapshot<>(credential.getSecret())).build();
+	public KeyHubSSHUserPrivateKeyCredentials snapshot(KeyHubSSHUserPrivateKeyCredentials credential) {
+		return KeyHubSSHUserPrivateKeyCredentials.Builder.newInstance().id(credential.getId())
+				.recordName(credential.getDescription()).href(credential.getHref()).username(credential.getUsername())
+				.password(new Snapshot<>(credential.getPassphrase())).file(new Snapshot<>(credential.getFile()))
+				.build();
 	}
 }

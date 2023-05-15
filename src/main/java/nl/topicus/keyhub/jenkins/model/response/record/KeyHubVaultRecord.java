@@ -18,6 +18,7 @@
 package nl.topicus.keyhub.jenkins.model.response.record;
 
 import java.util.List;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -34,6 +35,7 @@ public class KeyHubVaultRecord {
 	private String name;
 	private String filename;
 	private String username;
+	private Set<VaultRecordSecretType> types;
 
 	@JsonProperty("$type")
 	public String getType() {
@@ -103,6 +105,16 @@ public class KeyHubVaultRecord {
 	@JsonProperty("username")
 	public void setUsername(String value) {
 		this.username = value;
+	}
+
+	@JsonProperty("types")
+	public Set<VaultRecordSecretType> getTypes() {
+		return types;
+	}
+
+	@JsonProperty("types")
+	public void setTypes(Set<VaultRecordSecretType> types) {
+		this.types = types;
 	}
 
 	public String getHref() {

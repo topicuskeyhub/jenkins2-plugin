@@ -46,12 +46,14 @@ import nl.topicus.keyhub.jenkins.configuration.GlobalPluginConfiguration;
 import nl.topicus.keyhub.jenkins.credentials.SecretFileSupplier;
 import nl.topicus.keyhub.jenkins.credentials.SecretPasswordSupplier;
 import nl.topicus.keyhub.jenkins.credentials.file.KeyHubFileCredentials;
+import nl.topicus.keyhub.jenkins.credentials.sshuser.KeyHubSSHUserPrivateKeyCredentials;
 import nl.topicus.keyhub.jenkins.credentials.string.KeyHubStringCredentials;
 import nl.topicus.keyhub.jenkins.credentials.username_password.KeyHubUsernamePasswordCredentials;
 import nl.topicus.keyhub.jenkins.model.ClientCredentials;
 import nl.topicus.keyhub.jenkins.model.response.KeyHubTokenResponse;
 import nl.topicus.keyhub.jenkins.model.response.group.KeyHubGroup;
 import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
+import nl.topicus.keyhub.jenkins.model.response.record.VaultRecordSecretType;
 
 @Extension
 public class KeyHubCommunicationService implements IKeyHubCommunicationService {
@@ -102,19 +104,9 @@ public class KeyHubCommunicationService implements IKeyHubCommunicationService {
 			List<KeyHubGroup> khGroups = vaultAccessor.fetchGroupData();
 			List<KeyHubVaultRecord> khRecords = vaultAccessor.fetchRecordsFromVault(khGroups);
 			for (KeyHubVaultRecord curRecord : khRecords) {
-				if (type.isAssignableFrom(KeyHubUsernamePasswordCredentials.class)) {
-					jRecords.add((C) KeyHubUsernamePasswordCredentials.Builder.newInstance().id(curRecord.getUUID())
-							.recordName(curRecord.getName()).href(curRecord.getHref()).username(curRecord.getUsername())
-							.password(new SecretPasswordSupplier(this, clientCredentials, curRecord.getHref()))
-							.build());
-				} else if (type.isAssignableFrom(KeyHubStringCredentials.class)) {
-					jRecords.add((C) KeyHubStringCredentials.Builder.newInstance().id(curRecord.getUUID())
-							.recordName(curRecord.getName()).href(curRecord.getHref())
-							.secret(new SecretPasswordSupplier(this, clientCredentials, curRecord.getHref())).build());
-				} else if (type.isAssignableFrom(KeyHubFileCredentials.class)) {
-					jRecords.add((C) KeyHubFileCredentials.Builder.newInstance().id(curRecord.getUUID())
-							.recordName(curRecord.getName()).href(curRecord.getHref()).filename(curRecord.getFilename())
-							.file(new SecretFileSupplier(this, clientCredentials, curRecord.getHref())).build());
+				Credentials curCredentials = keyHubVaultRecordToCredentials(curRecord, clientCredentials);
+				if (type.isInstance(curCredentials)) {
+					jRecords.add((C) curCredentials);
 				}
 			}
 			return jRecords;
@@ -124,6 +116,43 @@ public class KeyHubCommunicationService implements IKeyHubCommunicationService {
 					e.getMessage());
 		}
 		return Collections.emptyList();
+	}
+
+	private Credentials keyHubVaultRecordToCredentials(KeyHubVaultRecord record, ClientCredentials clientCredentials) {
+		if (record.getUsername() == null) {
+			if (record.getTypes().contains(VaultRecordSecretType.PASSWORD)) {
+				return KeyHubStringCredentials.Builder.newInstance().id(record.getUUID()).recordName(record.getName())
+						.href(record.getHref())
+						.secret(new SecretPasswordSupplier(this, clientCredentials, record.getHref())).build();
+			} else if (record.getTypes().contains(VaultRecordSecretType.FILE)) {
+				return KeyHubFileCredentials.Builder.newInstance().id(record.getUUID()).recordName(record.getName())
+						.href(record.getHref()).filename(record.getFilename())
+						.file(new SecretFileSupplier(this, clientCredentials, record.getHref())).build();
+			} else {
+				return null;
+			}
+		} else {
+			if (record.getTypes().contains(VaultRecordSecretType.PASSWORD)) {
+				if (record.getTypes().contains(VaultRecordSecretType.FILE)) {
+					return KeyHubSSHUserPrivateKeyCredentials.Builder.newInstance().id(record.getUUID())
+							.recordName(record.getName()).href(record.getHref()).username(record.getUsername())
+							.password(new SecretPasswordSupplier(this, clientCredentials, record.getHref()))
+							.file(new SecretFileSupplier(this, clientCredentials, record.getHref())).build();
+				} else {
+					return KeyHubUsernamePasswordCredentials.Builder.newInstance().id(record.getUUID())
+							.recordName(record.getName()).href(record.getHref()).username(record.getUsername())
+							.password(new SecretPasswordSupplier(this, clientCredentials, record.getHref())).build();
+				}
+			} else {
+				if (record.getTypes().contains(VaultRecordSecretType.FILE)) {
+					return KeyHubSSHUserPrivateKeyCredentials.Builder.newInstance().id(record.getUUID())
+							.recordName(record.getName()).href(record.getHref()).username(record.getUsername())
+							.file(new SecretFileSupplier(this, clientCredentials, record.getHref())).build();
+				} else {
+					return null;
+				}
+			}
+		}
 	}
 
 	protected IVaultAccessor createVaultAccessor(ClientCredentials clientCredentials) {

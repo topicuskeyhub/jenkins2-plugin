@@ -48,12 +48,7 @@ public class KeyHubStringCredentials extends AbstractKeyHubCredentials implement
 		@Override
 		@NonNull
 		public String getDisplayName() {
-			return Messages.keyhubUsernamePassword();
-		}
-
-		@Override
-		public String getIconClassName() {
-			return "icon-credentials-userpass";
+			return Messages.keyhubString();
 		}
 	}
 
