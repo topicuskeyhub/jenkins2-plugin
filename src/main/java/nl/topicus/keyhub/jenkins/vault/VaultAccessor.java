@@ -43,7 +43,7 @@ public class VaultAccessor implements IVaultAccessor {
 	private RestClientBuilder restClientBuilder;
 	private KeyHubTokenResponse keyhubToken;
 	private static final MediaType RESPONSE_ACCEPT = MediaType
-			.valueOf("application/vnd.topicus.keyhub+json;version=44");
+			.valueOf("application/vnd.topicus.keyhub+json;version=62");
 
 	public VaultAccessor(ClientCredentials clientCredentials, String keyhubUri, RestClientBuilder restClientBuilder,
 			KeyHubTokenResponse keyhubToken) {
