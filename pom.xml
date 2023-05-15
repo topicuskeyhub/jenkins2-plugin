@@ -9,10 +9,10 @@
     </parent>
     <groupId>nl.topicus.keyhub.jenkins</groupId>
     <artifactId>keyhub-vault-plugin</artifactId>
-    <version>1.8</version>
+    <version>${revision}${changelist}</version>
     <packaging>hpi</packaging>
     <properties>
-        <revision>1.8</revision>
+        <revision>1.9</revision>
         <changelist>-SNAPSHOT</changelist>
         <jenkins.version>2.319.3</jenkins.version>
         <java.level>8</java.level>
@@ -24,7 +24,7 @@
         <url>https://github.com/topicuskeyhub/jenkins2-plugin</url>
         <connection>scm:git:git@github.com:topicuskeyhub/jenkins2-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:topicuskeyhub/jenkins2-plugin.git</developerConnection>
-        <tag>keyhub-vault-plugin-1.8</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <build>
