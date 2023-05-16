@@ -18,7 +18,6 @@
 package nl.topicus.keyhub.jenkins.credentials;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -42,6 +41,7 @@ import hudson.security.ACL;
 import nl.topicus.keyhub.jenkins.Messages;
 import nl.topicus.keyhub.jenkins.configuration.FolderKeyHubClientConfiguration;
 import nl.topicus.keyhub.jenkins.credentials.file.KeyHubFileCredentials;
+import nl.topicus.keyhub.jenkins.credentials.sshuser.KeyHubSSHUserPrivateKeyCredentials;
 import nl.topicus.keyhub.jenkins.credentials.string.KeyHubStringCredentials;
 import nl.topicus.keyhub.jenkins.credentials.username_password.KeyHubUsernamePasswordCredentials;
 import nl.topicus.keyhub.jenkins.model.ClientCredentials;
@@ -55,6 +55,7 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
 		tmp.add(KeyHubFileCredentials.class);
 		tmp.add(KeyHubStringCredentials.class);
 		tmp.add(KeyHubUsernamePasswordCredentials.class);
+		tmp.add(KeyHubSSHUserPrivateKeyCredentials.class);
 		SUPPORTED_CREDENTIALS = Collections.unmodifiableSet(tmp);
 	}
 
