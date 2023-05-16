@@ -66,7 +66,7 @@ public class KeyHubSSHUserPrivateKeyCredentials extends AbstractKeyHubCredential
 
 	@Override
 	public Secret getPassphrase() {
-		return password.get();
+		return password == null ? null : password.get();
 	}
 
 	public InputStream getContent() throws IOException {
