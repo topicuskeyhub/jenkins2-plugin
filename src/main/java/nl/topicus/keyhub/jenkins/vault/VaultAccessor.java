@@ -18,6 +18,7 @@
 package nl.topicus.keyhub.jenkins.vault;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.core.MediaType;
@@ -67,17 +68,15 @@ public class VaultAccessor implements IVaultAccessor {
 	public List<KeyHubGroup> fetchGroupData() throws IOException {
 		UriBuilder groupDataUri = UriBuilder.fromUri(keyhubUri).path("/keyhub/rest/v1/group");
 		ResteasyWebTarget target = restClientBuilder.getClient().target(groupDataUri);
-		ListOfKeyHubGroups keyhubGroups;
 		String authHeader = "Bearer " + keyhubToken.getToken();
 		try (Response response = target.request().header(HttpHeaders.AUTHORIZATION, authHeader).accept(RESPONSE_ACCEPT)
 				.get()) {
-			keyhubGroups = response.readEntity(ListOfKeyHubGroups.class);
+			return response.readEntity(ListOfKeyHubGroups.class).getGroups();
 		}
-		return keyhubGroups.getGroups();
 	}
 
 	public List<KeyHubVaultRecord> fetchRecordsFromVault(List<KeyHubGroup> groups) throws IOException {
-		ListOfKeyHubVaultRecords keyhubRecords = new ListOfKeyHubVaultRecords();
+		List<KeyHubVaultRecord> ret = new ArrayList<>();
 		for (KeyHubGroup group : groups) {
 			UriBuilder recordsUri = UriBuilder.fromUri(group.getHref()).path("vault/record").queryParam("sort",
 					"asc-name");
@@ -85,10 +84,10 @@ public class VaultAccessor implements IVaultAccessor {
 			String authHeader = "Bearer " + keyhubToken.getToken();
 			try (Response response = target.request().header(HttpHeaders.AUTHORIZATION, authHeader)
 					.accept(RESPONSE_ACCEPT).get()) {
-				keyhubRecords = response.readEntity(ListOfKeyHubVaultRecords.class);
+				ret.addAll(response.readEntity(ListOfKeyHubVaultRecords.class).getRecords());
 			}
 		}
-		return keyhubRecords.getRecords();
+		return ret;
 	}
 
 	public KeyHubVaultRecord fetchRecordSecret(String href) {
