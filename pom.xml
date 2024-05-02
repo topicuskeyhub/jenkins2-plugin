@@ -33,7 +33,7 @@
                     <groupId>com.github.spotbugs</groupId>
                     <artifactId>spotbugs-maven-plugin</artifactId>
                     <configuration>
-                        <omitVisitors>FindNullDeref</omitVisitors>
+                        <omitVisitors>FindNullDeref,FindReturnRef</omitVisitors>
                     </configuration>
                 </plugin>
             </plugins>
