@@ -19,5 +19,9 @@ node {
     }
 
     reportIssues()
+
+	notify {
+		slackChannel = '#ci-keyhub'
+	}            
 }
 
