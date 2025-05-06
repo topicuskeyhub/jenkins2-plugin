@@ -1,7 +1,6 @@
 package nl.topicus.keyhub.jenkins.vault;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -32,7 +31,6 @@ public class KeyHubCommunicationServiceTest {
         // Arrange
         KeyHubGroup testGroup = new KeyHubGroup();
         testGroup.setName("testKeyHubGroup");
-        List<KeyHubGroup> testKeyHubGroupList = new ArrayList<>(Arrays.asList(testGroup));
 
         Link testLink = new Link();
         testLink.setHref("www.testHref.com");
@@ -68,8 +66,7 @@ public class KeyHubCommunicationServiceTest {
             }
         };
 
-        when(mockedVaultAccessor.fetchGroupData()).thenReturn(testKeyHubGroupList);
-        when(mockedVaultAccessor.fetchRecordsFromVault(anyList())).thenReturn(testKeyHubRecordList);
+        when(mockedVaultAccessor.fetchRecordsFromVault()).thenReturn(testKeyHubRecordList);
 
         // Act
         List<KeyHubUsernamePasswordCredentials> result = communicationService

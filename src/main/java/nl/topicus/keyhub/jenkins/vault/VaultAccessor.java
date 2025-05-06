@@ -18,12 +18,15 @@
 package nl.topicus.keyhub.jenkins.vault;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.google.common.base.Strings;
 
@@ -38,23 +41,32 @@ import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
 import nl.topicus.keyhub.jenkins.model.response.record.ListOfKeyHubVaultRecords;
 
 public class VaultAccessor implements IVaultAccessor {
+	private static final Logger LOG = Logger.getLogger(VaultAccessor.class.getName());
 
+	private Instant createdAt;
 	private ClientCredentials clientCredentials;
 	private String keyhubUri;
 	private RestClientBuilder restClientBuilder;
 	private KeyHubTokenResponse keyhubToken;
 	private static final MediaType RESPONSE_ACCEPT = MediaType
-			.valueOf("application/vnd.topicus.keyhub+json;version=69");
+			.valueOf("application/vnd.topicus.keyhub+json;version=77");
+
+	private List<KeyHubVaultRecord> cachedRecords = null;
 
 	public VaultAccessor(ClientCredentials clientCredentials, String keyhubUri, RestClientBuilder restClientBuilder,
 			KeyHubTokenResponse keyhubToken) {
 		if (Strings.isNullOrEmpty(keyhubUri)) {
 			throw new IllegalArgumentException("KeyHub URI cannot be null or empty.");
 		}
+		this.createdAt = Instant.now();
 		this.clientCredentials = clientCredentials;
 		this.keyhubUri = keyhubUri;
 		this.restClientBuilder = restClientBuilder;
 		this.keyhubToken = keyhubToken;
+	}
+
+	public boolean isExpired() {
+		return createdAt.isBefore(Instant.now().minus(5, ChronoUnit.MINUTES)) || keyhubToken.isExpired();
 	}
 
 	public KeyHubTokenResponse getKeyhubToken() {
@@ -65,7 +77,15 @@ public class VaultAccessor implements IVaultAccessor {
 		return this.clientCredentials;
 	}
 
-	public List<KeyHubGroup> fetchGroupData() throws IOException {
+	@Override
+	public List<KeyHubVaultRecord> fetchRecordsFromVault() throws IOException {
+		if (cachedRecords != null)
+			return cachedRecords;
+		return fetchRecordsFromVault(fetchGroupData());
+	}
+
+	private List<KeyHubGroup> fetchGroupData() throws IOException {
+		LOG.info("Fetching groups for client " + clientCredentials.getClientId());
 		UriBuilder groupDataUri = UriBuilder.fromUri(keyhubUri).path("/keyhub/rest/v1/group");
 		ResteasyWebTarget target = restClientBuilder.getClient().target(groupDataUri);
 		String authHeader = "Bearer " + keyhubToken.getToken();
@@ -75,9 +95,11 @@ public class VaultAccessor implements IVaultAccessor {
 		}
 	}
 
-	public List<KeyHubVaultRecord> fetchRecordsFromVault(List<KeyHubGroup> groups) throws IOException {
+	private List<KeyHubVaultRecord> fetchRecordsFromVault(List<KeyHubGroup> groups) throws IOException {
 		List<KeyHubVaultRecord> ret = new ArrayList<>();
 		for (KeyHubGroup group : groups) {
+			LOG.info("Fetching records in vault '" + group.getName() + "' for client "
+					+ clientCredentials.getClientId());
 			UriBuilder recordsUri = UriBuilder.fromUri(group.getHref()).path("vault/record").queryParam("sort",
 					"asc-name");
 			ResteasyWebTarget target = restClientBuilder.getClient().target(recordsUri);

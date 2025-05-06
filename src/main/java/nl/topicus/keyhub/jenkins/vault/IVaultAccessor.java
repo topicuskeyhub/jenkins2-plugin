@@ -20,14 +20,12 @@ package nl.topicus.keyhub.jenkins.vault;
 import java.io.IOException;
 import java.util.List;
 
-import nl.topicus.keyhub.jenkins.model.response.group.KeyHubGroup;
 import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
 
 public interface IVaultAccessor {
-
-    public List<KeyHubGroup> fetchGroupData() throws IOException;
-
-    public List<KeyHubVaultRecord> fetchRecordsFromVault(List<KeyHubGroup> groups) throws IOException;
+	public boolean isExpired();
+	
+    public List<KeyHubVaultRecord> fetchRecordsFromVault() throws IOException;
 
     public KeyHubVaultRecord fetchRecordSecret(String href);
 }

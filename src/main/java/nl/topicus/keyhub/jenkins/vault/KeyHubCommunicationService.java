@@ -28,11 +28,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.Form;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriBuilder;
-
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.resteasy.client.jaxrs.internal.BasicAuthentication;
 
@@ -42,6 +37,10 @@ import com.google.common.base.Strings;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.util.Secret;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.Form;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriBuilder;
 import nl.topicus.keyhub.jenkins.configuration.GlobalPluginConfiguration;
 import nl.topicus.keyhub.jenkins.credentials.SecretFileSupplier;
 import nl.topicus.keyhub.jenkins.credentials.SecretPasswordSupplier;
@@ -51,7 +50,6 @@ import nl.topicus.keyhub.jenkins.credentials.string.KeyHubStringCredentials;
 import nl.topicus.keyhub.jenkins.credentials.username_password.KeyHubUsernamePasswordCredentials;
 import nl.topicus.keyhub.jenkins.model.ClientCredentials;
 import nl.topicus.keyhub.jenkins.model.response.KeyHubTokenResponse;
-import nl.topicus.keyhub.jenkins.model.response.group.KeyHubGroup;
 import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
 import nl.topicus.keyhub.jenkins.model.response.record.VaultRecordSecretType;
 
@@ -61,6 +59,7 @@ public class KeyHubCommunicationService implements IKeyHubCommunicationService {
 	private static final Logger LOG = Logger.getLogger(KeyHubCommunicationService.class.getName());
 	private RestClientBuilder restClientBuilder = new RestClientBuilder();
 	private Map<String, KeyHubTokenResponse> currentClientIdWithTokens = new ConcurrentHashMap<>();
+	private Map<String, IVaultAccessor> cachedVaultAccessors = new ConcurrentHashMap<>();
 
 	private KeyHubTokenResponse fetchAuthenticationTokenIfNeeded(ClientCredentials clientCredentials,
 			KeyHubTokenResponse currentToken) {
@@ -95,14 +94,13 @@ public class KeyHubCommunicationService implements IKeyHubCommunicationService {
 	public <C extends Credentials> List<C> fetchCredentials(Class<C> type, ClientCredentials clientCredentials) {
 		Optional<String> keyhubURI = getKeyHubURI();
 		if (!keyhubURI.isPresent()) {
-			LOG.log(Level.WARNING, "The KeyHub URI is not present which will present you with no output.");
+			LOG.log(Level.WARNING, "The KeyHub URI is not set, cannot fetch vault records.");
 			return Collections.emptyList();
 		}
 		IVaultAccessor vaultAccessor = createVaultAccessor(clientCredentials);
 		List<C> jRecords = new ArrayList<>();
 		try {
-			List<KeyHubGroup> khGroups = vaultAccessor.fetchGroupData();
-			List<KeyHubVaultRecord> khRecords = vaultAccessor.fetchRecordsFromVault(khGroups);
+			List<KeyHubVaultRecord> khRecords = vaultAccessor.fetchRecordsFromVault();
 			for (KeyHubVaultRecord curRecord : khRecords) {
 				Credentials curCredentials = keyHubVaultRecordToCredentials(curRecord, clientCredentials);
 				if (type.isInstance(curCredentials)) {
@@ -112,7 +110,7 @@ public class KeyHubCommunicationService implements IKeyHubCommunicationService {
 			return jRecords;
 
 		} catch (IOException e) {
-			LOG.log(Level.WARNING, "IO could not fetch credentials out of the KeyHub vault: message=[{0}]",
+			LOG.log(Level.WARNING, "IO error while fetching vault records: message=[{0}]",
 					e.getMessage());
 		}
 		return Collections.emptyList();
@@ -156,8 +154,10 @@ public class KeyHubCommunicationService implements IKeyHubCommunicationService {
 	}
 
 	protected IVaultAccessor createVaultAccessor(ClientCredentials clientCredentials) {
-		return new VaultAccessor(clientCredentials, this.getKeyHubURI().orElse(""), restClientBuilder,
-				getTokenForClient(clientCredentials));
+		return cachedVaultAccessors.compute(clientCredentials.getClientId(),
+				(clientId, cached) -> cached != null && !cached.isExpired() ? cached
+						: new VaultAccessor(clientCredentials, this.getKeyHubURI().orElse(""), restClientBuilder,
+								getTokenForClient(clientCredentials)));
 	}
 
 	public KeyHubVaultRecord fetchRecordSecret(ClientCredentials clientCredentials, String href) {
