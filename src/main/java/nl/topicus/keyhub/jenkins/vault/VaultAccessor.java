@@ -79,9 +79,9 @@ public class VaultAccessor implements IVaultAccessor {
 
 	@Override
 	public List<KeyHubVaultRecord> fetchRecordsFromVault() throws IOException {
-		if (cachedRecords != null)
-			return cachedRecords;
-		return fetchRecordsFromVault(fetchGroupData());
+		if (cachedRecords == null)
+			cachedRecords = fetchRecordsFromVault(fetchGroupData());
+		return cachedRecords;
 	}
 
 	private List<KeyHubGroup> fetchGroupData() throws IOException {
