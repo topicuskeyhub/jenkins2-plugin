@@ -15,29 +15,29 @@ import hudson.util.Secret;
 
 public class KeyHubUsernamePasswordCredentialsSnapshotTakerTest {
 
-    @Test
-    public void KeyHubUsernameSnapshotTest() {
-        // Arrange
-        KeyHubUsernamePasswordCredentialsSnapshotTaker snapshotTaker = new KeyHubUsernamePasswordCredentialsSnapshotTaker();
-        Secret testSecret = Secret.fromString("testSecret");
-        Supplier<Secret> mockedSecretSupplier1 = mock(Supplier.class);
+	@Test
+	public void KeyHubUsernameSnapshotTest() {
+		// Arrange
+		KeyHubUsernamePasswordCredentialsSnapshotTaker snapshotTaker = new KeyHubUsernamePasswordCredentialsSnapshotTaker();
+		Secret testSecret = Secret.fromString("testSecret");
+		@SuppressWarnings("unchecked")
+		Supplier<Secret> mockedSecretSupplier1 = mock(Supplier.class);
 
-        KeyHubUsernamePasswordCredentials testCredential = KeyHubUsernamePasswordCredentials.Builder
-                .newInstance().id("testId").recordName("testName").href("testHref").username("testUsername")
-                .password(mockedSecretSupplier1).build();
+		KeyHubUsernamePasswordCredentials testCredential = KeyHubUsernamePasswordCredentials.Builder.newInstance()
+				.id("testId").recordName("testName").username("testUsername").password(mockedSecretSupplier1).build();
 
-        when(mockedSecretSupplier1.get()).thenReturn(testSecret);
+		when(mockedSecretSupplier1.get()).thenReturn(testSecret);
 
-        // Act
-        KeyHubUsernamePasswordCredentials usernamePasswordCredentialSnapshot = snapshotTaker.snapshot(testCredential);
-        usernamePasswordCredentialSnapshot.getPassword(); // Additional calls to prove that the snapshot is actually a
-                                                          // snapshot.
-        usernamePasswordCredentialSnapshot.getPassword();
+		// Act
+		KeyHubUsernamePasswordCredentials usernamePasswordCredentialSnapshot = snapshotTaker.snapshot(testCredential);
+		usernamePasswordCredentialSnapshot.getPassword(); // Additional calls to prove that the snapshot is actually a
+															// snapshot.
+		usernamePasswordCredentialSnapshot.getPassword();
 
-        // Assert
-        assertNotSame(testCredential, usernamePasswordCredentialSnapshot);
-        assertEquals(testSecret, usernamePasswordCredentialSnapshot.getPassword());
-        verify(mockedSecretSupplier1, times(1)).get();
-    }
+		// Assert
+		assertNotSame(testCredential, usernamePasswordCredentialSnapshot);
+		assertEquals(testSecret, usernamePasswordCredentialSnapshot.getPassword());
+		verify(mockedSecretSupplier1, times(1)).get();
+	}
 
 }

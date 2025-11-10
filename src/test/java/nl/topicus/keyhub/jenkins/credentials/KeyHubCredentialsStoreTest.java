@@ -22,50 +22,50 @@ import nl.topicus.keyhub.jenkins.credentials.username_password.KeyHubUsernamePas
 
 public class KeyHubCredentialsStoreTest {
 
-    @Rule
-    public JenkinsRule jenkinsRule = new JenkinsRule();
+	@Rule
+	public JenkinsRule jenkinsRule = new JenkinsRule();
 
-    @Test
-    public void credentialsStoreGetCredentialsTest() {
-        // Arrange
-        KeyHubCredentialsProvider mockedProvider = mock(KeyHubCredentialsProvider.class);
-        ItemGroup mockedItemGroup = mock(ItemGroup.class);
-        KeyHubCredentialsStore store = new KeyHubCredentialsStore(mockedProvider, mockedItemGroup);
-        List<Credentials> result = new ArrayList<>();
-        KeyHubUsernamePasswordCredentials testCredentials = Builder.newInstance().id("testId")
-                .recordName("testRecord").href("testHref").username("testUsername").build();
-        Credentials testCredential = (Credentials) testCredentials;
-        result.add(testCredential);
+	@Test
+	public void credentialsStoreGetCredentialsTest() {
+		// Arrange
+		KeyHubCredentialsProvider mockedProvider = mock(KeyHubCredentialsProvider.class);
+		ItemGroup<?> mockedItemGroup = mock(ItemGroup.class);
+		KeyHubCredentialsStore store = new KeyHubCredentialsStore(mockedProvider, mockedItemGroup);
+		List<Credentials> result = new ArrayList<>();
+		KeyHubUsernamePasswordCredentials testCredentials = Builder.newInstance().id("testId").recordName("testRecord")
+				.username("testUsername").build();
+		Credentials testCredential = (Credentials) testCredentials;
+		result.add(testCredential);
 
-        when(mockedProvider.getCredentialsForItemGroup(any(), any(ItemGroup.class))).thenReturn(result);
+		when(mockedProvider.getCredentialsForItemGroup(any(), any(ItemGroup.class))).thenReturn(result);
 
-        // Act
-        List<Credentials> credentials = store.getCredentials(Domain.global());
+		// Act
+		List<Credentials> credentials = store.getCredentials(Domain.global());
 
-        // Assert
-        assertEquals(testCredential, credentials.get(0));
-    }
+		// Assert
+		assertEquals(testCredential, credentials.get(0));
+	}
 
-    @Test
-    public void credentialsStoreGetCredentialsWrongDomainTest() {
-        // Arrange
-        KeyHubCredentialsProvider mockedProvider = mock(KeyHubCredentialsProvider.class);
-        ItemGroup mockedItemGroup = mock(ItemGroup.class);
-        KeyHubCredentialsStore store = new KeyHubCredentialsStore(mockedProvider, mockedItemGroup);
-        List<Credentials> result = new ArrayList<>();
-        KeyHubUsernamePasswordCredentials testCredentials = Builder.newInstance().id("testId")
-                .recordName("testRecord").href("testHref").username("testUsername").build();
-        Credentials testCredential = (Credentials) testCredentials;
-        result.add(testCredential);
-        Domain wrongDomain = new Domain("testDomain", "testDescription", null);
+	@Test
+	public void credentialsStoreGetCredentialsWrongDomainTest() {
+		// Arrange
+		KeyHubCredentialsProvider mockedProvider = mock(KeyHubCredentialsProvider.class);
+		ItemGroup<?> mockedItemGroup = mock(ItemGroup.class);
+		KeyHubCredentialsStore store = new KeyHubCredentialsStore(mockedProvider, mockedItemGroup);
+		List<Credentials> result = new ArrayList<>();
+		KeyHubUsernamePasswordCredentials testCredentials = Builder.newInstance().id("testId").recordName("testRecord")
+				.username("testUsername").build();
+		Credentials testCredential = (Credentials) testCredentials;
+		result.add(testCredential);
+		Domain wrongDomain = new Domain("testDomain", "testDescription", null);
 
-        when(mockedProvider.getCredentialsForItemGroup(any(), any(ItemGroup.class))).thenReturn(result);
+		when(mockedProvider.getCredentialsForItemGroup(any(), any(ItemGroup.class))).thenReturn(result);
 
-        // Act
-        List<Credentials> credentials = store.getCredentials(wrongDomain);
+		// Act
+		List<Credentials> credentials = store.getCredentials(wrongDomain);
 
-        // Assert
-        assertTrue(credentials.isEmpty());
-    }
+		// Assert
+		assertTrue(credentials.isEmpty());
+	}
 
 }

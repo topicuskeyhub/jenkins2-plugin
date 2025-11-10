@@ -38,7 +38,7 @@ public class KeyHubFileCredentials extends AbstractKeyHubCredentials implements 
 	private Supplier<Secret> file;
 
 	public KeyHubFileCredentials(Builder builder) {
-		super(builder.id, builder.recordName, builder.href);
+		super(builder.id, builder.recordName);
 		this.filename = builder.filename;
 		this.file = builder.file;
 	}
@@ -72,7 +72,6 @@ public class KeyHubFileCredentials extends AbstractKeyHubCredentials implements 
 
 		private String id;
 		private String recordName;
-		private String href;
 		private String filename;
 		private Supplier<Secret> file;
 
@@ -85,11 +84,6 @@ public class KeyHubFileCredentials extends AbstractKeyHubCredentials implements 
 
 		public Builder id(String id) {
 			this.id = id;
-			return this;
-		}
-
-		public Builder href(String href) {
-			this.href = href;
 			return this;
 		}
 

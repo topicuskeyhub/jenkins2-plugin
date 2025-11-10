@@ -59,7 +59,7 @@ public class KeyHubCredentialsProvider extends CredentialsProvider {
 		SUPPORTED_CREDENTIALS = Collections.unmodifiableSet(tmp);
 	}
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "deprecation" })
 	@Override
 	public <C extends Credentials> List<C> getCredentials(Class<C> type, ItemGroup itemGroup,
 			@Nullable Authentication authentication) {

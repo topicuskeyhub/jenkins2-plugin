@@ -35,7 +35,7 @@ public class KeyHubUsernamePasswordCredentials extends AbstractKeyHubCredentials
     private Supplier<Secret> password;
 
     public KeyHubUsernamePasswordCredentials(Builder builder) {
-        super(builder.id, builder.recordName, builder.href);
+        super(builder.id, builder.recordName);
         this.username = builder.username;
         this.password = builder.password;
     }
@@ -68,7 +68,6 @@ public class KeyHubUsernamePasswordCredentials extends AbstractKeyHubCredentials
 
         private String id;
         private String recordName;
-        private String href;
         private String username;
         private Supplier<Secret> password;
 
@@ -81,11 +80,6 @@ public class KeyHubUsernamePasswordCredentials extends AbstractKeyHubCredentials
 
         public Builder id(String id) {
             this.id = id;
-            return this;
-        }
-
-        public Builder href(String href) {
-            this.href = href;
             return this;
         }
 

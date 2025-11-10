@@ -19,28 +19,29 @@ package nl.topicus.keyhub.jenkins.credentials;
 
 import java.util.function.Supplier;
 
+import com.topicus.keyhub.sdk.models.vault.VaultRecord;
+
 import hudson.util.Secret;
 import nl.topicus.keyhub.jenkins.model.ClientCredentials;
-import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
 import nl.topicus.keyhub.jenkins.vault.IKeyHubCommunicationService;
 
 public class SecretPasswordSupplier implements Supplier<Secret> {
 
-    private transient IKeyHubCommunicationService keyhubCommunicationService;
-    private ClientCredentials clientCredentials;
-    private String href;
+	private transient IKeyHubCommunicationService keyhubCommunicationService;
+	private ClientCredentials clientCredentials;
+	private String uuid;
 
-    public SecretPasswordSupplier(IKeyHubCommunicationService keyhubCommunicationsService, ClientCredentials clientCredentials,
-            String href) {
-        this.keyhubCommunicationService = keyhubCommunicationsService;
-        this.clientCredentials = clientCredentials;
-        this.href = href;
-    }
+	public SecretPasswordSupplier(IKeyHubCommunicationService keyhubCommunicationsService,
+			ClientCredentials clientCredentials, String uuid) {
+		this.keyhubCommunicationService = keyhubCommunicationsService;
+		this.clientCredentials = clientCredentials;
+		this.uuid = uuid;
+	}
 
-    @Override
-    public Secret get() {
-        KeyHubVaultRecord secret = keyhubCommunicationService.fetchRecordSecret(this.clientCredentials, this.href);
-        return secret.getAdditionalObjects().getSecret().getPassword();
-    }
+	@Override
+	public Secret get() {
+		VaultRecord secret = keyhubCommunicationService.fetchRecordSecret(this.clientCredentials, this.uuid);
+		return Secret.fromString(secret.getAdditionalObjects().getSecret().getPassword());
+	}
 
 }

@@ -24,17 +24,17 @@ import nl.topicus.keyhub.jenkins.credentials.Snapshot;
 
 @Extension
 public class KeyHubUsernamePasswordCredentialsSnapshotTaker
-        extends CredentialsSnapshotTaker<KeyHubUsernamePasswordCredentials> {
+		extends CredentialsSnapshotTaker<KeyHubUsernamePasswordCredentials> {
 
-    @Override
-    public Class<KeyHubUsernamePasswordCredentials> type() {
-        return KeyHubUsernamePasswordCredentials.class;
-    }
+	@Override
+	public Class<KeyHubUsernamePasswordCredentials> type() {
+		return KeyHubUsernamePasswordCredentials.class;
+	}
 
-    @Override
-    public KeyHubUsernamePasswordCredentials snapshot(KeyHubUsernamePasswordCredentials credential) {
-        return KeyHubUsernamePasswordCredentials.Builder.newInstance().id(credential.getId())
-                .recordName(credential.getDescription()).href(credential.getHref()).username(credential.getUsername())
-                .password(new Snapshot<>(credential.getPassword())).build();
-    }
+	@Override
+	public KeyHubUsernamePasswordCredentials snapshot(KeyHubUsernamePasswordCredentials credential) {
+		return KeyHubUsernamePasswordCredentials.Builder.newInstance().id(credential.getId())
+				.recordName(credential.getDescription()).username(credential.getUsername())
+				.password(new Snapshot<>(credential.getPassword())).build();
+	}
 }

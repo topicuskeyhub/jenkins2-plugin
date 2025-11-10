@@ -33,7 +33,7 @@ public class KeyHubFileCredentialsSnapshotTaker extends CredentialsSnapshotTaker
 	@Override
 	public KeyHubFileCredentials snapshot(KeyHubFileCredentials credential) {
 		return KeyHubFileCredentials.Builder.newInstance().id(credential.getId())
-				.recordName(credential.getDescription()).href(credential.getHref()).filename(credential.getFileName())
+				.recordName(credential.getDescription()).filename(credential.getFileName())
 				.file(new Snapshot<>(credential.getFile())).build();
 	}
 }

@@ -58,8 +58,8 @@ public class KeyHubCommunicationServiceIntegrationTest {
 		assertEquals("Demo Record 5_IT", credentials.get(5).getDescription());
 		assertEquals(KeyHubStringCredentials.class, credentials.get(5).getClass());
 		KeyHubUsernamePasswordCredentials cred0 = (KeyHubUsernamePasswordCredentials) credentials.get(0);
-		MatcherAssert.assertThat(communicationService.fetchRecordSecret(testClientCredentials, cred0.getHref())
-				.getAdditionalObjects().getSecret().getPassword().getPlainText(), is(not(emptyOrNullString())));
+		MatcherAssert.assertThat(communicationService.fetchRecordSecret(testClientCredentials, cred0.getId())
+				.getAdditionalObjects().getSecret().getPassword(), is(not(emptyOrNullString())));
 	}
 
 	@Test

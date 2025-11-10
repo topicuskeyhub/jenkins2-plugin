@@ -17,15 +17,14 @@
 
 package nl.topicus.keyhub.jenkins.vault;
 
-import java.io.IOException;
 import java.util.List;
 
-import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
+import com.topicus.keyhub.sdk.models.vault.VaultRecord;
 
 public interface IVaultAccessor {
 	public boolean isExpired();
 	
-    public List<KeyHubVaultRecord> fetchRecordsFromVault() throws IOException;
+    public List<VaultRecord> fetchRecordsFromVault() ;
 
-    public KeyHubVaultRecord fetchRecordSecret(String href);
+    public VaultRecord fetchRecordSecret(String uuid);
 }

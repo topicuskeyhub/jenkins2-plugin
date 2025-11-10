@@ -8,12 +8,13 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Test;
 
+import com.topicus.keyhub.sdk.models.vault.VaultRecord;
+import com.topicus.keyhub.sdk.models.vault.VaultRecordAdditionalObjects;
+import com.topicus.keyhub.sdk.models.vault.VaultRecordSecrets;
+
 import hudson.util.Secret;
 import nl.topicus.keyhub.jenkins.credentials.SecretPasswordSupplier;
 import nl.topicus.keyhub.jenkins.model.ClientCredentials;
-import nl.topicus.keyhub.jenkins.model.response.record.AdditionalObjectsOfVaultRecord;
-import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
-import nl.topicus.keyhub.jenkins.model.response.record.RecordSecret;
 import nl.topicus.keyhub.jenkins.vault.IKeyHubCommunicationService;
 import nl.topicus.keyhub.jenkins.vault.KeyHubCommunicationService;
 
@@ -23,11 +24,11 @@ public class SecretSupplierTest {
     public void secretSupplierGet() {
         // Arrange
         IKeyHubCommunicationService mockedService = mock(KeyHubCommunicationService.class);
-        KeyHubVaultRecord testRecord = new KeyHubVaultRecord();
-        AdditionalObjectsOfVaultRecord additionalObjects = new AdditionalObjectsOfVaultRecord();
-        RecordSecret testRecordSecret = new RecordSecret();
+        VaultRecord testRecord = new VaultRecord();
+        VaultRecordAdditionalObjects additionalObjects = new VaultRecordAdditionalObjects();
+        VaultRecordSecrets testRecordSecret = new VaultRecordSecrets();
         testRecord.setAdditionalObjects(additionalObjects);
-        testRecordSecret.setPassword(Secret.fromString("testSecret"));
+        testRecordSecret.setPassword("testSecret");
         additionalObjects.setSecret(testRecordSecret);
 
         testRecord.setAdditionalObjects(additionalObjects);
@@ -42,8 +43,8 @@ public class SecretSupplierTest {
         // Act
         Secret secret = secretSupplier.get();   
 
-        // Assert
-        assertEquals(secret, testRecord.getAdditionalObjects().getSecret().getPassword());
+        // Assert 
+        assertEquals(secret.getPlainText(), testRecord.getAdditionalObjects().getSecret().getPassword());
     }
 
 }

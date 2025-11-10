@@ -32,7 +32,6 @@ public class ClientCredentials {
     }
 
     public ClientCredentials() {
-
     }
 
     public String getClientId() {
@@ -50,5 +49,4 @@ public class ClientCredentials {
     public void setClientSecret(Secret clientSecret) {
         this.clientSecret = clientSecret;
     }
-
 }

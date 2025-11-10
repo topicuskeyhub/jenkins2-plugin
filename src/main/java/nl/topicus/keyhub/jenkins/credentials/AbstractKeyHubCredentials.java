@@ -22,14 +22,8 @@ import com.cloudbees.plugins.credentials.impl.BaseStandardCredentials;
 public abstract class AbstractKeyHubCredentials extends BaseStandardCredentials {
 
     private static final long serialVersionUID = 1L;
-    private final String href;
 
-    protected AbstractKeyHubCredentials(String id, String description, String href) {
+    protected AbstractKeyHubCredentials(String id, String description) {
         super(id, description);
-        this.href = href;
-    }
-
-    public String getHref() {
-        return this.href;
     }
 }

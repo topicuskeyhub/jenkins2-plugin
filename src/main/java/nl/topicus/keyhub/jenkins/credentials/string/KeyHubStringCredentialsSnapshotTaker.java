@@ -33,7 +33,6 @@ public class KeyHubStringCredentialsSnapshotTaker extends CredentialsSnapshotTak
 	@Override
 	public KeyHubStringCredentials snapshot(KeyHubStringCredentials credential) {
 		return KeyHubStringCredentials.Builder.newInstance().id(credential.getId())
-				.recordName(credential.getDescription()).href(credential.getHref())
-				.secret(new Snapshot<>(credential.getSecret())).build();
+				.recordName(credential.getDescription()).secret(new Snapshot<>(credential.getSecret())).build();
 	}
 }

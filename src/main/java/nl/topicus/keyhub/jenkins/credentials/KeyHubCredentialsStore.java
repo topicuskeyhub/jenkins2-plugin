@@ -27,7 +27,6 @@ import com.cloudbees.plugins.credentials.CredentialsStore;
 import com.cloudbees.plugins.credentials.CredentialsStoreAction;
 import com.cloudbees.plugins.credentials.domains.Domain;
 
-import org.acegisecurity.Authentication;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.jenkins.ui.icon.IconType;
@@ -43,99 +42,99 @@ import nl.topicus.keyhub.jenkins.Messages;
 
 public class KeyHubCredentialsStore extends CredentialsStore {
 
-    private final KeyHubCredentialsProvider provider;
-    private final KeyHubCredentialsStoreAction action = new KeyHubCredentialsStoreAction(this);
-    private ItemGroup<?> itemGroup;
+	private final KeyHubCredentialsProvider provider;
+	private final KeyHubCredentialsStoreAction action = new KeyHubCredentialsStoreAction(this);
+	private ItemGroup<?> itemGroup;
 
-    public KeyHubCredentialsStore(KeyHubCredentialsProvider provider, ItemGroup<?> itemGroup) {
-        super(KeyHubCredentialsProvider.class);
-        this.provider = provider;
-        this.itemGroup = itemGroup;
-    }
+	public KeyHubCredentialsStore(KeyHubCredentialsProvider provider, ItemGroup<?> itemGroup) {
+		super(KeyHubCredentialsProvider.class);
+		this.provider = provider;
+		this.itemGroup = itemGroup;
+	}
 
-    @NonNull
-    @Override
-    public ModelObject getContext() {
-        return itemGroup;
-    }
+	@NonNull
+	@Override
+	public ModelObject getContext() {
+		return itemGroup;
+	}
 
-    @Override
-    public boolean hasPermission(Authentication a, Permission permission) {
-        return CredentialsProvider.VIEW.equals(permission) && Jenkins.get().getACL().hasPermission(a, permission);
-    }
+	@Override
+	public boolean hasPermission2(org.springframework.security.core.Authentication a, Permission permission) {
+		return CredentialsProvider.VIEW.equals(permission) && Jenkins.get().getACL().hasPermission2(a, permission);
+	}
 
-    @Override
-    public List<Credentials> getCredentials(Domain domain) {
-        if (Domain.global().equals(domain) && Jenkins.get().hasPermission(CredentialsProvider.VIEW)) {
-            return provider.getCredentialsForItemGroup(Credentials.class, itemGroup);
-        }
-        return Collections.emptyList();
+	@Override
+	public List<Credentials> getCredentials(Domain domain) {
+		if (Domain.global().equals(domain) && Jenkins.get().hasPermission(CredentialsProvider.VIEW)) {
+			return provider.getCredentialsForItemGroup(Credentials.class, itemGroup);
+		}
+		return Collections.emptyList();
 
-    }
+	}
 
-    @Override
-    public boolean addCredentials(Domain domain, Credentials credentials) throws IOException {
-        return false;
-    }
+	@Override
+	public boolean addCredentials(Domain domain, Credentials credentials) throws IOException {
+		return false;
+	}
 
-    @Override
-    public boolean removeCredentials(Domain domain, Credentials credentials) throws IOException {
-        return false;
-    }
+	@Override
+	public boolean removeCredentials(Domain domain, Credentials credentials) throws IOException {
+		return false;
+	}
 
-    @Override
-    public boolean updateCredentials(Domain domain, Credentials current, Credentials replacement) throws IOException {
-        return false;
-    }
+	@Override
+	public boolean updateCredentials(Domain domain, Credentials current, Credentials replacement) throws IOException {
+		return false;
+	}
 
-    @Nullable
-    @Override
-    public CredentialsStoreAction getStoreAction() {
-        return action;
-    }
+	@Nullable
+	@Override
+	public CredentialsStoreAction getStoreAction() {
+		return action;
+	}
 
-    @ExportedBean
-    public static final class KeyHubCredentialsStoreAction extends CredentialsStoreAction {
+	@ExportedBean
+	public static final class KeyHubCredentialsStoreAction extends CredentialsStoreAction {
 
-        private static final String ICON_CLASS = "icon-keyhub-credentials-vault";
+		private static final String ICON_CLASS = "icon-keyhub-credentials-vault";
 
-        private final KeyHubCredentialsStore store;
+		private final KeyHubCredentialsStore store;
 
-        private KeyHubCredentialsStoreAction(KeyHubCredentialsStore store) {
-            this.store = store;
-            addIcons();
-        }
+		private KeyHubCredentialsStoreAction(KeyHubCredentialsStore store) {
+			this.store = store;
+			addIcons();
+		}
 
-        private void addIcons() {
-            IconSet.icons.addIcon(new Icon(ICON_CLASS + " icon-sm", "keyhub-vault-plugin/images/16x16/icon.jpg",
-                    Icon.ICON_SMALL_STYLE, IconType.PLUGIN));
-            IconSet.icons.addIcon(new Icon(ICON_CLASS + " icon-md", "keyhub-vault-plugin/images/24x24/icon.jpg",
-                    Icon.ICON_SMALL_STYLE, IconType.PLUGIN));
-            IconSet.icons.addIcon(new Icon(ICON_CLASS + " icon-lg", "keyhub-vault-plugin/images/32x32/icon.jpg",
-                    Icon.ICON_SMALL_STYLE, IconType.PLUGIN));
-            IconSet.icons.addIcon(new Icon(ICON_CLASS + " icon-xlg", "keyhub-vault-plugin/images/48x48/icon.jpg",
-                    Icon.ICON_SMALL_STYLE, IconType.PLUGIN));
-        }
+		private void addIcons() {
+			IconSet.icons.addIcon(new Icon(ICON_CLASS + " icon-sm", "keyhub-vault-plugin/images/16x16/icon.jpg",
+					Icon.ICON_SMALL_STYLE, IconType.PLUGIN));
+			IconSet.icons.addIcon(new Icon(ICON_CLASS + " icon-md", "keyhub-vault-plugin/images/24x24/icon.jpg",
+					Icon.ICON_SMALL_STYLE, IconType.PLUGIN));
+			IconSet.icons.addIcon(new Icon(ICON_CLASS + " icon-lg", "keyhub-vault-plugin/images/32x32/icon.jpg",
+					Icon.ICON_SMALL_STYLE, IconType.PLUGIN));
+			IconSet.icons.addIcon(new Icon(ICON_CLASS + " icon-xlg", "keyhub-vault-plugin/images/48x48/icon.jpg",
+					Icon.ICON_SMALL_STYLE, IconType.PLUGIN));
+		}
 
-        @Override
-        @NonNull
-        public CredentialsStore getStore() {
-            return store;
-        }
+		@Override
+		@NonNull
+		public CredentialsStore getStore() {
+			return store;
+		}
 
-        @Override
-        public String getIconFileName() {
-            return isVisible() ? "/plugin/keyhub-vault-plugin/images/32x32/alauda.png" : null;
-        }
+		@Override
+		public String getIconFileName() {
+			return isVisible() ? "/plugin/keyhub-vault-plugin/images/32x32/alauda.png" : null;
+		}
 
-        @Override
-        public String getIconClassName() {
-            return isVisible() ? ICON_CLASS : null;
-        }
+		@Override
+		public String getIconClassName() {
+			return isVisible() ? ICON_CLASS : null;
+		}
 
-        @Override
-        public String getDisplayName() {
-            return Messages.keyhubCredentialsStore();
-        }
-    }
+		@Override
+		public String getDisplayName() {
+			return Messages.keyhubCredentialsStore();
+		}
+	}
 }

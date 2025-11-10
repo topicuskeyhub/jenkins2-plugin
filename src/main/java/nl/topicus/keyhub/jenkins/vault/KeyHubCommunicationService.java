@@ -17,8 +17,7 @@
 
 package nl.topicus.keyhub.jenkins.vault;
 
-import java.io.IOException;
-import java.time.Instant;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,19 +27,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import org.jboss.resteasy.client.jaxrs.internal.BasicAuthentication;
-
 import com.cloudbees.plugins.credentials.Credentials;
 import com.google.common.base.Strings;
+import com.microsoft.kiota.ApiException;
+import com.microsoft.kiota.http.KiotaClientFactory;
 
 import hudson.Extension;
 import hudson.ExtensionList;
-import hudson.util.Secret;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.core.Form;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.UriBuilder;
 import nl.topicus.keyhub.jenkins.configuration.GlobalPluginConfiguration;
 import nl.topicus.keyhub.jenkins.credentials.SecretFileSupplier;
 import nl.topicus.keyhub.jenkins.credentials.SecretPasswordSupplier;
@@ -49,46 +42,17 @@ import nl.topicus.keyhub.jenkins.credentials.sshuser.KeyHubSSHUserPrivateKeyCred
 import nl.topicus.keyhub.jenkins.credentials.string.KeyHubStringCredentials;
 import nl.topicus.keyhub.jenkins.credentials.username_password.KeyHubUsernamePasswordCredentials;
 import nl.topicus.keyhub.jenkins.model.ClientCredentials;
-import nl.topicus.keyhub.jenkins.model.response.KeyHubTokenResponse;
-import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
-import nl.topicus.keyhub.jenkins.model.response.record.VaultRecordSecretType;
+import com.topicus.keyhub.sdk.models.vault.VaultRecord;
+import com.topicus.keyhub.sdk.models.vault.VaultSecretType;
+import okhttp3.OkHttpClient;
 
 @Extension
 public class KeyHubCommunicationService implements IKeyHubCommunicationService {
 
 	private static final Logger LOG = Logger.getLogger(KeyHubCommunicationService.class.getName());
-	private RestClientBuilder restClientBuilder = new RestClientBuilder();
-	private Map<String, KeyHubTokenResponse> currentClientIdWithTokens = new ConcurrentHashMap<>();
+	private OkHttpClient httpClient = KiotaClientFactory.create().connectTimeout(Duration.ofSeconds(30))
+			.readTimeout(Duration.ofMinutes(1)).build();
 	private Map<String, IVaultAccessor> cachedVaultAccessors = new ConcurrentHashMap<>();
-
-	private KeyHubTokenResponse fetchAuthenticationTokenIfNeeded(ClientCredentials clientCredentials,
-			KeyHubTokenResponse currentToken) {
-		if (currentToken != null && !currentToken.isExpired()) {
-			return currentToken;
-		}
-		String keyhubURI = getKeyHubURI().get();
-		KeyHubTokenResponse keyhubToken;
-		if (clientCredentials.getClientSecret() == null) {
-			throw new IllegalStateException("Cannot refresh access token, no secret stored/given.");
-		}
-
-		UriBuilder authenticateUri = UriBuilder.fromUri(keyhubURI).path("/login/oauth2/token").queryParam("authVault",
-				"access");
-		Form connectionRequest = new Form().param("grant_type", "client_credentials");
-		ResteasyWebTarget target = restClientBuilder.getClient().target(authenticateUri);
-		target.register(new BasicAuthentication(clientCredentials.getClientId(),
-				Secret.toString(clientCredentials.getClientSecret())));
-		target.request().accept(MediaType.APPLICATION_JSON_TYPE);
-		keyhubToken = target.request().post(Entity.form(connectionRequest), KeyHubTokenResponse.class);
-		keyhubToken.setTokenReceivedAt(Instant.now());
-
-		return keyhubToken;
-	}
-
-	protected KeyHubTokenResponse getTokenForClient(ClientCredentials credentials) {
-		return currentClientIdWithTokens.compute(credentials.getClientId(),
-				(clientId, token) -> fetchAuthenticationTokenIfNeeded(credentials, token));
-	}
 
 	@SuppressWarnings("unchecked")
 	public <C extends Credentials> List<C> fetchCredentials(Class<C> type, ClientCredentials clientCredentials) {
@@ -100,8 +64,8 @@ public class KeyHubCommunicationService implements IKeyHubCommunicationService {
 		IVaultAccessor vaultAccessor = createVaultAccessor(clientCredentials);
 		List<C> jRecords = new ArrayList<>();
 		try {
-			List<KeyHubVaultRecord> khRecords = vaultAccessor.fetchRecordsFromVault();
-			for (KeyHubVaultRecord curRecord : khRecords) {
+			List<VaultRecord> khRecords = vaultAccessor.fetchRecordsFromVault();
+			for (VaultRecord curRecord : khRecords) {
 				Credentials curCredentials = keyHubVaultRecordToCredentials(curRecord, clientCredentials);
 				if (type.isInstance(curCredentials)) {
 					jRecords.add((C) curCredentials);
@@ -109,43 +73,41 @@ public class KeyHubCommunicationService implements IKeyHubCommunicationService {
 			}
 			return jRecords;
 
-		} catch (IOException e) {
-			LOG.log(Level.WARNING, "IO error while fetching vault records: message=[{0}]",
-					e.getMessage());
+		} catch (ApiException e) {
+			LOG.log(Level.WARNING, "IO error while fetching vault records: message=[{0}]", e.getMessage());
 		}
 		return Collections.emptyList();
 	}
 
-	private Credentials keyHubVaultRecordToCredentials(KeyHubVaultRecord record, ClientCredentials clientCredentials) {
+	private Credentials keyHubVaultRecordToCredentials(VaultRecord record, ClientCredentials clientCredentials) {
 		if (record.getUsername() == null) {
-			if (record.getTypes().contains(VaultRecordSecretType.PASSWORD)) {
-				return KeyHubStringCredentials.Builder.newInstance().id(record.getUUID()).recordName(record.getName())
-						.href(record.getHref())
-						.secret(new SecretPasswordSupplier(this, clientCredentials, record.getHref())).build();
-			} else if (record.getTypes().contains(VaultRecordSecretType.FILE)) {
-				return KeyHubFileCredentials.Builder.newInstance().id(record.getUUID()).recordName(record.getName())
-						.href(record.getHref()).filename(record.getFilename())
-						.file(new SecretFileSupplier(this, clientCredentials, record.getHref())).build();
+			if (record.getTypes().contains(VaultSecretType.PASSWORD)) {
+				return KeyHubStringCredentials.Builder.newInstance().id(record.getUuid()).recordName(record.getName())
+						.secret(new SecretPasswordSupplier(this, clientCredentials, record.getUuid())).build();
+			} else if (record.getTypes().contains(VaultSecretType.FILE)) {
+				return KeyHubFileCredentials.Builder.newInstance().id(record.getUuid()).recordName(record.getName())
+						.filename(record.getFilename())
+						.file(new SecretFileSupplier(this, clientCredentials, record.getUuid())).build();
 			} else {
 				return null;
 			}
 		} else {
-			if (record.getTypes().contains(VaultRecordSecretType.PASSWORD)) {
-				if (record.getTypes().contains(VaultRecordSecretType.FILE)) {
-					return KeyHubSSHUserPrivateKeyCredentials.Builder.newInstance().id(record.getUUID())
-							.recordName(record.getName()).href(record.getHref()).username(record.getUsername())
-							.password(new SecretPasswordSupplier(this, clientCredentials, record.getHref()))
-							.file(new SecretFileSupplier(this, clientCredentials, record.getHref())).build();
+			if (record.getTypes().contains(VaultSecretType.PASSWORD)) {
+				if (record.getTypes().contains(VaultSecretType.FILE)) {
+					return KeyHubSSHUserPrivateKeyCredentials.Builder.newInstance().id(record.getUuid())
+							.recordName(record.getName()).username(record.getUsername())
+							.password(new SecretPasswordSupplier(this, clientCredentials, record.getUuid()))
+							.file(new SecretFileSupplier(this, clientCredentials, record.getUuid())).build();
 				} else {
-					return KeyHubUsernamePasswordCredentials.Builder.newInstance().id(record.getUUID())
-							.recordName(record.getName()).href(record.getHref()).username(record.getUsername())
-							.password(new SecretPasswordSupplier(this, clientCredentials, record.getHref())).build();
+					return KeyHubUsernamePasswordCredentials.Builder.newInstance().id(record.getUuid())
+							.recordName(record.getName()).username(record.getUsername())
+							.password(new SecretPasswordSupplier(this, clientCredentials, record.getUuid())).build();
 				}
 			} else {
-				if (record.getTypes().contains(VaultRecordSecretType.FILE)) {
-					return KeyHubSSHUserPrivateKeyCredentials.Builder.newInstance().id(record.getUUID())
-							.recordName(record.getName()).href(record.getHref()).username(record.getUsername())
-							.file(new SecretFileSupplier(this, clientCredentials, record.getHref())).build();
+				if (record.getTypes().contains(VaultSecretType.FILE)) {
+					return KeyHubSSHUserPrivateKeyCredentials.Builder.newInstance().id(record.getUuid())
+							.recordName(record.getName()).username(record.getUsername())
+							.file(new SecretFileSupplier(this, clientCredentials, record.getUuid())).build();
 				} else {
 					return null;
 				}
@@ -156,13 +118,12 @@ public class KeyHubCommunicationService implements IKeyHubCommunicationService {
 	protected IVaultAccessor createVaultAccessor(ClientCredentials clientCredentials) {
 		return cachedVaultAccessors.compute(clientCredentials.getClientId(),
 				(clientId, cached) -> cached != null && !cached.isExpired() ? cached
-						: new VaultAccessor(clientCredentials, this.getKeyHubURI().orElse(""), restClientBuilder,
-								getTokenForClient(clientCredentials)));
+						: VaultAccessor.create(httpClient, this.getKeyHubURI(), clientCredentials));
 	}
 
-	public KeyHubVaultRecord fetchRecordSecret(ClientCredentials clientCredentials, String href) {
+	public VaultRecord fetchRecordSecret(ClientCredentials clientCredentials, String uuid) {
 		IVaultAccessor vaultAccessor = createVaultAccessor(clientCredentials);
-		return vaultAccessor.fetchRecordSecret(href);
+		return vaultAccessor.fetchRecordSecret(uuid);
 	}
 
 	protected Optional<String> getKeyHubURI() {

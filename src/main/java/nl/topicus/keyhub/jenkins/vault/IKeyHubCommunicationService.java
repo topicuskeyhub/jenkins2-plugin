@@ -20,15 +20,15 @@ package nl.topicus.keyhub.jenkins.vault;
 import java.util.List;
 
 import com.cloudbees.plugins.credentials.Credentials;
+import com.topicus.keyhub.sdk.models.vault.VaultRecord;
 
 import hudson.ExtensionPoint;
 import nl.topicus.keyhub.jenkins.model.ClientCredentials;
-import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
 
 public interface IKeyHubCommunicationService extends ExtensionPoint {
 
 	public <C extends Credentials> List<C> fetchCredentials(Class<C> type, ClientCredentials clientCredentials);
 
-    public KeyHubVaultRecord fetchRecordSecret(ClientCredentials clientCredentials, String href);
+    public VaultRecord fetchRecordSecret(ClientCredentials clientCredentials, String uuid);
 
 }

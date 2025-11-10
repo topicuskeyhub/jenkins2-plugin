@@ -34,7 +34,7 @@ public class KeyHubSSHUserPrivateKeyCredentialsSnapshotTaker
 	@Override
 	public KeyHubSSHUserPrivateKeyCredentials snapshot(KeyHubSSHUserPrivateKeyCredentials credential) {
 		return KeyHubSSHUserPrivateKeyCredentials.Builder.newInstance().id(credential.getId())
-				.recordName(credential.getDescription()).href(credential.getHref()).username(credential.getUsername())
+				.recordName(credential.getDescription()).username(credential.getUsername())
 				.password(new Snapshot<>(credential.getPassphrase())).file(new Snapshot<>(credential.getFile()))
 				.build();
 	}

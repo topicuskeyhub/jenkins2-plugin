@@ -17,108 +17,87 @@
 
 package nl.topicus.keyhub.jenkins.vault;
 
-import java.io.IOException;
+import static com.topicus.keyhub.sdk.vaultrecord.GetAdditionalQueryParameterType.Secret;
+
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Logger;
 
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
-
-import com.google.common.base.Strings;
-
-import org.apache.http.HttpHeaders;
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
+import com.microsoft.kiota.http.OkHttpRequestAdapter;
 
 import nl.topicus.keyhub.jenkins.model.ClientCredentials;
-import nl.topicus.keyhub.jenkins.model.response.KeyHubTokenResponse;
-import nl.topicus.keyhub.jenkins.model.response.group.KeyHubGroup;
-import nl.topicus.keyhub.jenkins.model.response.group.ListOfKeyHubGroups;
-import nl.topicus.keyhub.jenkins.model.response.record.KeyHubVaultRecord;
-import nl.topicus.keyhub.jenkins.model.response.record.ListOfKeyHubVaultRecords;
+import nl.topicus.keyhub.sdk.KeyHubAuthenticationProvider;
+import com.topicus.keyhub.sdk.KeyHubClient;
+import com.topicus.keyhub.sdk.models.group.Group;
+import com.topicus.keyhub.sdk.models.vault.VaultRecord;
+import com.topicus.keyhub.sdk.models.vault.VaultRecordLinkableWrapper;
+import com.topicus.keyhub.sdk.vaultrecord.GetAdditionalQueryParameterType;
+import okhttp3.OkHttpClient;
 
 public class VaultAccessor implements IVaultAccessor {
 	private static final Logger LOG = Logger.getLogger(VaultAccessor.class.getName());
 
-	private Instant createdAt;
-	private ClientCredentials clientCredentials;
-	private String keyhubUri;
-	private RestClientBuilder restClientBuilder;
-	private KeyHubTokenResponse keyhubToken;
-	private static final MediaType RESPONSE_ACCEPT = MediaType
-			.valueOf("application/vnd.topicus.keyhub+json;version=77");
+	private final Instant createdAt;
+	private final KeyHubClient client;
+	private final String clientId;
 
-	private List<KeyHubVaultRecord> cachedRecords = null;
+	private List<VaultRecord> cachedRecords = null;
 
-	public VaultAccessor(ClientCredentials clientCredentials, String keyhubUri, RestClientBuilder restClientBuilder,
-			KeyHubTokenResponse keyhubToken) {
-		if (Strings.isNullOrEmpty(keyhubUri)) {
-			throw new IllegalArgumentException("KeyHub URI cannot be null or empty.");
+	public static IVaultAccessor create(OkHttpClient httpClient, Optional<String> keyHubURI,
+			ClientCredentials clientCredentials) {
+		if (httpClient == null || keyHubURI.isEmpty() || clientCredentials == null
+				|| clientCredentials.getClientId() == null || clientCredentials.getClientSecret() == null) {
+			return new EmptyVaultAccessor();
 		}
+		return new VaultAccessor(httpClient, keyHubURI.get(), clientCredentials);
+	}
+
+	private VaultAccessor(OkHttpClient httpClient, String keyHubURI, ClientCredentials clientCredentials) {
 		this.createdAt = Instant.now();
-		this.clientCredentials = clientCredentials;
-		this.keyhubUri = keyhubUri;
-		this.restClientBuilder = restClientBuilder;
-		this.keyhubToken = keyhubToken;
+		this.clientId = clientCredentials.getClientId();
+		OkHttpRequestAdapter requestAdapter = new OkHttpRequestAdapter(new KeyHubAuthenticationProvider(keyHubURI,
+				clientCredentials.getClientId(), clientCredentials.getClientSecret().getPlainText()), null, null,
+				httpClient);
+		requestAdapter.setBaseUrl(keyHubURI + "/keyhub/rest/v1");
+		this.client = new KeyHubClient(requestAdapter);
 	}
 
 	public boolean isExpired() {
-		return createdAt.isBefore(Instant.now().minus(5, ChronoUnit.MINUTES)) || keyhubToken.isExpired();
-	}
-
-	public KeyHubTokenResponse getKeyhubToken() {
-		return this.keyhubToken;
-	}
-
-	public ClientCredentials getClientCredentials() {
-		return this.clientCredentials;
+		return createdAt.isBefore(Instant.now().minus(5, ChronoUnit.MINUTES));
 	}
 
 	@Override
-	public List<KeyHubVaultRecord> fetchRecordsFromVault() throws IOException {
+	public List<VaultRecord> fetchRecordsFromVault() {
 		if (cachedRecords == null)
 			cachedRecords = fetchRecordsFromVault(fetchGroupData());
 		return cachedRecords;
 	}
 
-	private List<KeyHubGroup> fetchGroupData() throws IOException {
-		LOG.info("Fetching groups for client " + clientCredentials.getClientId());
-		UriBuilder groupDataUri = UriBuilder.fromUri(keyhubUri).path("/keyhub/rest/v1/group");
-		ResteasyWebTarget target = restClientBuilder.getClient().target(groupDataUri);
-		String authHeader = "Bearer " + keyhubToken.getToken();
-		try (Response response = target.request().header(HttpHeaders.AUTHORIZATION, authHeader).accept(RESPONSE_ACCEPT)
-				.get()) {
-			return response.readEntity(ListOfKeyHubGroups.class).getGroups();
-		}
+	private List<Group> fetchGroupData() {
+		LOG.info("Fetching groups for client " + clientId);
+		return client.group().get().getItems();
 	}
 
-	private List<KeyHubVaultRecord> fetchRecordsFromVault(List<KeyHubGroup> groups) throws IOException {
-		List<KeyHubVaultRecord> ret = new ArrayList<>();
-		for (KeyHubGroup group : groups) {
-			LOG.info("Fetching records in vault '" + group.getName() + "' for client "
-					+ clientCredentials.getClientId());
-			UriBuilder recordsUri = UriBuilder.fromUri(group.getHref()).path("vault/record").queryParam("sort",
-					"asc-name");
-			ResteasyWebTarget target = restClientBuilder.getClient().target(recordsUri);
-			String authHeader = "Bearer " + keyhubToken.getToken();
-			try (Response response = target.request().header(HttpHeaders.AUTHORIZATION, authHeader)
-					.accept(RESPONSE_ACCEPT).get()) {
-				ret.addAll(response.readEntity(ListOfKeyHubVaultRecords.class).getRecords());
-			}
+	private List<VaultRecord> fetchRecordsFromVault(List<Group> groups) {
+		List<VaultRecord> ret = new ArrayList<>();
+		for (Group group : groups) {
+			LOG.info("Fetching records in vault '" + group.getName() + "' for client " + clientId);
+			VaultRecordLinkableWrapper curRecords = client.group().byGroupid(group.getLinks().get(0).getId()).vault()
+					.record().get(c -> {
+						c.queryParameters.sort = new String[] { "asc-name" };
+					});
+			ret.addAll(curRecords.getItems());
 		}
 		return ret;
 	}
 
-	public KeyHubVaultRecord fetchRecordSecret(String href) {
-		UriBuilder recordSecretUri = UriBuilder.fromUri(href).queryParam("additional", "secret");
-		ResteasyWebTarget target = restClientBuilder.getClient().target(recordSecretUri);
-		String authHeader = "Bearer " + keyhubToken.getToken();
-		try (Response response = target.request().header(HttpHeaders.AUTHORIZATION, authHeader).accept(RESPONSE_ACCEPT)
-				.header("topicus-Vault-session", keyhubToken.getVaultSession()).get()) {
-			return response.readEntity(KeyHubVaultRecord.class);
-		}
+	public VaultRecord fetchRecordSecret(String uuid) {
+		return client.vaultrecord().get(c -> {
+			c.queryParameters.additional = new GetAdditionalQueryParameterType[] { Secret };
+			c.queryParameters.uuid = new String[] { uuid };
+		}).getItems().stream().findFirst().orElse(null);
 	}
 }
