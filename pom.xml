@@ -74,7 +74,7 @@
             <dependency>
                 <groupId>com.topicus-keyhub</groupId>
                 <artifactId>sdk-java</artifactId>
-                <version>44-SNAPSHOT</version>
+                <version>44.0.1</version>
             </dependency>
             <dependency>
                 <groupId>org.jetbrains.kotlin</groupId>

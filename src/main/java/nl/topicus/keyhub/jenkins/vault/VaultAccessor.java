@@ -27,14 +27,14 @@ import java.util.Optional;
 import java.util.logging.Logger;
 
 import com.microsoft.kiota.http.OkHttpRequestAdapter;
-
-import nl.topicus.keyhub.jenkins.model.ClientCredentials;
-import nl.topicus.keyhub.sdk.KeyHubAuthenticationProvider;
+import com.topicus.keyhub.sdk.KeyHubAuthenticationProvider;
 import com.topicus.keyhub.sdk.KeyHubClient;
 import com.topicus.keyhub.sdk.models.group.Group;
 import com.topicus.keyhub.sdk.models.vault.VaultRecord;
 import com.topicus.keyhub.sdk.models.vault.VaultRecordLinkableWrapper;
 import com.topicus.keyhub.sdk.vaultrecord.GetAdditionalQueryParameterType;
+
+import nl.topicus.keyhub.jenkins.model.ClientCredentials;
 import okhttp3.OkHttpClient;
 
 public class VaultAccessor implements IVaultAccessor {
