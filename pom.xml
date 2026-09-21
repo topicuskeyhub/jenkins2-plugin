@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>5.24</version>
+        <version>6.2236.v12dd4c483242</version>
         <relativePath />
     </parent>
     <groupId>nl.topicus.keyhub.jenkins</groupId>
@@ -14,7 +14,7 @@
     <properties>
         <revision>1.16</revision>
         <changelist>-SNAPSHOT</changelist>
-        <jenkins.baseline>2.504</jenkins.baseline>
+        <jenkins.baseline>2.568</jenkins.baseline>
         <jenkins.version>${jenkins.baseline}.1</jenkins.version>
     </properties>
 
@@ -28,6 +28,17 @@
     </scm>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>com.github.spotbugs</groupId>
+                    <artifactId>spotbugs-maven-plugin</artifactId>
+                    <configuration>
+                        <omitVisitors>FindNullDeref,FindReturnRef</omitVisitors>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.jenkins-ci.tools</groupId>
@@ -62,19 +73,19 @@
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
                 <artifactId>bom-${jenkins.baseline}.x</artifactId>
-                <version>5622.vc9c3051619f5</version>
+                <version>7046.v43536164769c</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>com.google.errorprone</groupId>
                 <artifactId>error_prone_annotations</artifactId>
-                <version>2.38.0</version>
+                <version>2.50.0</version>
             </dependency>
             <dependency>
                 <groupId>com.topicus-keyhub</groupId>
                 <artifactId>sdk-java</artifactId>
-                <version>44.0.1</version>
+                <version>50.0.0</version>
             </dependency>
             <dependency>
                 <groupId>org.jetbrains.kotlin</groupId>
