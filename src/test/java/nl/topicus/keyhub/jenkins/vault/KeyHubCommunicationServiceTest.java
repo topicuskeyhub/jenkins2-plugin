@@ -1,6 +1,8 @@
 package nl.topicus.keyhub.jenkins.vault;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -101,6 +103,43 @@ public class KeyHubCommunicationServiceTest {
 
         //Assert
         assertEquals("testSecret", record.getAdditionalObjects().getSecret().getPassword());
+    }
+
+    @Test
+    public void cacheIsolatesDifferentSecretsForSameClientId() {
+        KeyHubCommunicationService communicationService = new KeyHubCommunicationService() {
+            @Override
+            protected Optional<String> getKeyHubURI() {
+                return Optional.of("https://keyhub.topicusonderwijs.nl");
+            }
+        };
+
+        ClientCredentials victim = new ClientCredentials("sharedId", Secret.fromString("victimSecret"));
+        ClientCredentials attacker = new ClientCredentials("sharedId", Secret.fromString("attackerSecret"));
+
+        IVaultAccessor victimAccessor = communicationService.createVaultAccessor(victim);
+        IVaultAccessor attackerAccessor = communicationService.createVaultAccessor(attacker);
+
+        // A caller presenting a different secret must never be handed the session
+        // that was authenticated with another secret, even for the same clientId.
+        assertNotSame(victimAccessor, attackerAccessor);
+    }
+
+    @Test
+    public void cacheReturnsSameAccessorForIdenticalCredentials() {
+        KeyHubCommunicationService communicationService = new KeyHubCommunicationService() {
+            @Override
+            protected Optional<String> getKeyHubURI() {
+                return Optional.of("https://keyhub.topicusonderwijs.nl");
+            }
+        };
+
+        ClientCredentials credentials = new ClientCredentials("sharedId", Secret.fromString("theSecret"));
+
+        IVaultAccessor first = communicationService.createVaultAccessor(credentials);
+        IVaultAccessor second = communicationService.createVaultAccessor(credentials);
+
+        assertSame(first, second);
     }
 
 }

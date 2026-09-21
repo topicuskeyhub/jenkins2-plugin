@@ -17,6 +17,7 @@
 
 package nl.topicus.keyhub.jenkins.vault;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,6 +30,7 @@ import java.util.logging.Logger;
 
 import com.cloudbees.plugins.credentials.Credentials;
 import com.google.common.base.Strings;
+import com.google.common.hash.Hashing;
 import com.microsoft.kiota.ApiException;
 import com.microsoft.kiota.http.KiotaClientFactory;
 
@@ -116,9 +118,17 @@ public class KeyHubCommunicationService implements IKeyHubCommunicationService {
 	}
 
 	protected IVaultAccessor createVaultAccessor(ClientCredentials clientCredentials) {
-		return cachedVaultAccessors.compute(clientCredentials.getClientId(),
-				(clientId, cached) -> cached != null && !cached.isExpired() ? cached
+		cachedVaultAccessors.values().removeIf(IVaultAccessor::isExpired);
+		return cachedVaultAccessors.compute(cacheKey(clientCredentials),
+				(key, cached) -> cached != null && !cached.isExpired() ? cached
 						: VaultAccessor.create(httpClient, this.getKeyHubURI(), clientCredentials));
+	}
+
+	private String cacheKey(ClientCredentials clientCredentials) {
+		String secret = clientCredentials.getClientSecret() == null ? ""
+				: clientCredentials.getClientSecret().getPlainText();
+		String secretHash = Hashing.sha256().hashString(secret, StandardCharsets.UTF_8).toString();
+		return clientCredentials.getClientId() + ":" + secretHash;
 	}
 
 	public VaultRecord fetchRecordSecret(ClientCredentials clientCredentials, String uuid) {
