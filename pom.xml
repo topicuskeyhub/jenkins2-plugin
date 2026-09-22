@@ -12,8 +12,8 @@
     <version>${revision}${changelist}</version>
     <packaging>hpi</packaging>
     <properties>
-        <revision>1.16</revision>
-        <changelist></changelist>
+        <revision>1.17</revision>
+        <changelist>-SNAPSHOT</changelist>
         <jenkins.baseline>2.568</jenkins.baseline>
         <jenkins.version>${jenkins.baseline}.1</jenkins.version>
     </properties>
@@ -24,7 +24,7 @@
         <url>https://github.com/topicuskeyhub/jenkins2-plugin</url>
         <connection>scm:git:git@github.com:topicuskeyhub/jenkins2-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:topicuskeyhub/jenkins2-plugin.git</developerConnection>
-        <tag>keyhub-vault-plugin-1.16</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <build>
