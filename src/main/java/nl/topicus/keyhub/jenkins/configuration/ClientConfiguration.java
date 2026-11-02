@@ -35,7 +35,7 @@ public class ClientConfiguration extends AbstractDescribableImpl<ClientConfigura
     private static final long serialVersionUID = 1L;
     private String keyhubURI;
     private String clientId;
-    private String clientSecret;
+    private Secret clientSecret;
 
     @DataBoundConstructor
     public ClientConfiguration() {
@@ -55,17 +55,17 @@ public class ClientConfiguration extends AbstractDescribableImpl<ClientConfigura
         this.clientId = vaultId;
     }
 
-    public String getClientSecret() {
+    public Secret getClientSecret() {
         return this.clientSecret;
     }
 
     @DataBoundSetter
-    public void setClientSecret(String clientSecret) {
+    public void setClientSecret(Secret clientSecret) {
         this.clientSecret = clientSecret;
     }
 
     public ClientCredentials getClientCredentials() {
-        return new ClientCredentials(getClientId(), Secret.fromString(getClientSecret()));
+        return new ClientCredentials(getClientId(), clientSecret == null ? Secret.fromString(null) : clientSecret);
     }
 
     @Extension
