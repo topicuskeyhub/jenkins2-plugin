@@ -1,8 +1,8 @@
 package nl.topicus.keyhub.jenkins.vault;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.topicus.keyhub.sdk.models.group.Group;
 import com.topicus.keyhub.sdk.models.vault.VaultRecord;
@@ -25,11 +25,11 @@ import hudson.util.Secret;
 import nl.topicus.keyhub.jenkins.credentials.username_password.KeyHubUsernamePasswordCredentials;
 import nl.topicus.keyhub.jenkins.model.ClientCredentials;
 
-public class KeyHubCommunicationServiceTest {
+class KeyHubCommunicationServiceTest {
 	private static final String TEST_UUID = UUID.randomUUID().toString();
 	
     @Test
-    public void fetchCredentialsTest() throws Exception {
+    void fetchCredentialsTest() throws Exception {
         // Arrange
         Group testGroup = new Group();
         testGroup.setName("testKeyHubGroup");
@@ -72,7 +72,7 @@ public class KeyHubCommunicationServiceTest {
     }
 
     @Test
-    public void fetchRecordSecretTest() {
+    void fetchRecordSecretTest() {
         //Arrange
         IVaultAccessor mockedVaultAccessor = mock(IVaultAccessor.class);
         IKeyHubCommunicationService communicationService = new KeyHubCommunicationService() {
@@ -106,7 +106,7 @@ public class KeyHubCommunicationServiceTest {
     }
 
     @Test
-    public void cacheIsolatesDifferentSecretsForSameClientId() {
+    void cacheIsolatesDifferentSecretsForSameClientId() {
         KeyHubCommunicationService communicationService = new KeyHubCommunicationService() {
             @Override
             protected Optional<String> getKeyHubURI() {
@@ -126,7 +126,7 @@ public class KeyHubCommunicationServiceTest {
     }
 
     @Test
-    public void cacheReturnsSameAccessorForIdenticalCredentials() {
+    void cacheReturnsSameAccessorForIdenticalCredentials() {
         KeyHubCommunicationService communicationService = new KeyHubCommunicationService() {
             @Override
             protected Optional<String> getKeyHubURI() {

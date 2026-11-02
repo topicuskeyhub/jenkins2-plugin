@@ -1,12 +1,12 @@
 package nl.topicus.keyhub.jenkins;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.topicus.keyhub.sdk.models.vault.VaultRecord;
 import com.topicus.keyhub.sdk.models.vault.VaultRecordAdditionalObjects;
@@ -18,10 +18,10 @@ import nl.topicus.keyhub.jenkins.model.ClientCredentials;
 import nl.topicus.keyhub.jenkins.vault.IKeyHubCommunicationService;
 import nl.topicus.keyhub.jenkins.vault.KeyHubCommunicationService;
 
-public class SecretSupplierTest {
+class SecretSupplierTest {
 
     @Test
-    public void secretSupplierGet() {
+    void secretSupplierGet() {
         // Arrange
         IKeyHubCommunicationService mockedService = mock(KeyHubCommunicationService.class);
         VaultRecord testRecord = new VaultRecord();

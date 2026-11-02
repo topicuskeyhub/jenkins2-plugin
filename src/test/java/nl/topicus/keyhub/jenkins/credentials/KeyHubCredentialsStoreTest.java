@@ -1,7 +1,7 @@
 package nl.topicus.keyhub.jenkins.credentials;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -12,21 +12,27 @@ import java.util.List;
 import com.cloudbees.plugins.credentials.domains.Domain;
 import com.cloudbees.plugins.credentials.Credentials;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 import hudson.model.ItemGroup;
 import nl.topicus.keyhub.jenkins.credentials.username_password.KeyHubUsernamePasswordCredentials;
 import nl.topicus.keyhub.jenkins.credentials.username_password.KeyHubUsernamePasswordCredentials.Builder;
 
-public class KeyHubCredentialsStoreTest {
+@WithJenkins
+class KeyHubCredentialsStoreTest {
 
-	@Rule
-	public JenkinsRule jenkinsRule = new JenkinsRule();
+	private JenkinsRule jenkinsRule;
+
+	@BeforeEach
+	void setUp(JenkinsRule rule) {
+		jenkinsRule = rule;
+	}
 
 	@Test
-	public void credentialsStoreGetCredentialsTest() {
+	void credentialsStoreGetCredentialsTest() {
 		// Arrange
 		KeyHubCredentialsProvider mockedProvider = mock(KeyHubCredentialsProvider.class);
 		ItemGroup<?> mockedItemGroup = mock(ItemGroup.class);
@@ -47,7 +53,7 @@ public class KeyHubCredentialsStoreTest {
 	}
 
 	@Test
-	public void credentialsStoreGetCredentialsWrongDomainTest() {
+	void credentialsStoreGetCredentialsWrongDomainTest() {
 		// Arrange
 		KeyHubCredentialsProvider mockedProvider = mock(KeyHubCredentialsProvider.class);
 		ItemGroup<?> mockedItemGroup = mock(ItemGroup.class);

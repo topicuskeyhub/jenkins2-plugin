@@ -1,25 +1,31 @@
 package nl.topicus.keyhub.jenkins.credentials;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import java.util.List;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 import com.cloudbees.plugins.credentials.Credentials;
 
 import hudson.model.ItemGroup;
 
-public class KeyHubCredentialsProviderTest {
+@WithJenkins
+class KeyHubCredentialsProviderTest {
 
-    @Rule
-    public JenkinsRule jenkinsRule = new JenkinsRule();
+    private JenkinsRule jenkinsRule;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        jenkinsRule = rule;
+    }
 
     @Test
-    public void getCredentialsNoPermissionsTest() {
+    void getCredentialsNoPermissionsTest() {
         // Arrange
         KeyHubCredentialsProvider provider = new KeyHubCredentialsProvider();
         ItemGroup<?> mockedItemGroup = mock(ItemGroup.class);
@@ -32,7 +38,7 @@ public class KeyHubCredentialsProviderTest {
     }
 
     @Test
-    public void getCredentialsWithPermissionsButEmptyItemGroup() {
+    void getCredentialsWithPermissionsButEmptyItemGroup() {
         // Arrange
         KeyHubCredentialsProvider provider = new KeyHubCredentialsProvider();
         ItemGroup<?> mockedItemGroup = mock(ItemGroup.class);

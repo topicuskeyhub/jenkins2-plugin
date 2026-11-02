@@ -3,7 +3,7 @@ package nl.topicus.keyhub.jenkins.vault;
 import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -13,9 +13,10 @@ import org.eclipse.jetty.util.IO;
 import org.hamcrest.MatcherAssert;
 import org.jenkinsci.plugins.plaincredentials.FileCredentials;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 import com.cloudbees.plugins.credentials.common.StandardCredentials;
 
@@ -27,15 +28,20 @@ import nl.topicus.keyhub.jenkins.credentials.string.KeyHubStringCredentials;
 import nl.topicus.keyhub.jenkins.credentials.username_password.KeyHubUsernamePasswordCredentials;
 import nl.topicus.keyhub.jenkins.model.ClientCredentials;
 
-public class KeyHubCommunicationServiceIntegrationTest {
+@WithJenkins
+class KeyHubCommunicationServiceIntegrationTest {
 
 	public String globalKeyHubURI = "https://keyhub.topicusonderwijs.nl";
 
-	@Rule
-	public JenkinsRule jenkins = new JenkinsRule();
+	private JenkinsRule jenkins;
+
+	@BeforeEach
+	void setUp(JenkinsRule rule) {
+		jenkins = rule;
+	}
 
 	@Test
-	public void getCredentialsFromKeyHubVault() {
+	void getCredentialsFromKeyHubVault() {
 		// Arrange
 		IKeyHubCommunicationService communicationService = new KeyHubCommunicationService();
 		ClientCredentials testClientCredentials = new ClientCredentials(System.getenv("CLIENT_ID"),
@@ -63,7 +69,7 @@ public class KeyHubCommunicationServiceIntegrationTest {
 	}
 
 	@Test
-	public void getStringCredentialsFromKeyHubVault() {
+	void getStringCredentialsFromKeyHubVault() {
 		// Arrange
 		IKeyHubCommunicationService communicationService = new KeyHubCommunicationService();
 		ClientCredentials testClientCredentials = new ClientCredentials(System.getenv("CLIENT_ID"),
@@ -81,7 +87,7 @@ public class KeyHubCommunicationServiceIntegrationTest {
 	}
 
 	@Test
-	public void getFileCredentialsFromKeyHubVault() throws IOException {
+	void getFileCredentialsFromKeyHubVault() throws IOException {
 		// Arrange
 		IKeyHubCommunicationService communicationService = new KeyHubCommunicationService();
 		ClientCredentials testClientCredentials = new ClientCredentials(System.getenv("CLIENT_ID"),
